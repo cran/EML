@@ -39,17 +39,15 @@ for example, compare \code{\link{get_attributes}} to the example shown here.
 
 \item \code{unitList}: get method for UnitList
 }}
+
 \examples{
+\donttest{
 f <- system.file("xsd/test", "eml-datasetWithUnits.xml", package = "EML")
 eml <- read_eml(f)
 eml_get(eml, "physical")
-
-## slower examples
-\donttest{
 eml_get(eml, "attributeList")
 
 ## The first argument need not be an "eml" class, it could be a child element; e.g.
 eml_get(eml@dataset@dataTable, "physical")
 }
 }
-

@@ -4,13 +4,15 @@
 \alias{eml_validate}
 \title{eml_validate}
 \usage{
-eml_validate(eml, encoding = character(), ...)
+eml_validate(eml, encoding = "UTF-8", schema = NULL)
 }
 \arguments{
 \item{eml}{an eml class object, file, or xml document}
 
 \item{encoding}{optional, if eml is a file path / an eml and has special characters, one can
 gives the encoding used by xmlParse.}
+
+\item{schema}{path to schema}
 
 \item{...}{additional arguments to eml_write, such as namespaces}
 }
@@ -34,11 +36,6 @@ as defined by the XSD specification
 eml <- read_eml(f)
 eml_validate(eml)
 
-## Can validate fragments as well, though may need the relevant namespace
-dataset <- new("dataset", title = "incomplete, invalid EML")
-eml_validate(dataset, namespaces = c(ds = "eml://ecoinformatics.org/dataset-2.1.1"), ns = "ds")
-
 }
 
 }
-

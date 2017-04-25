@@ -4,7 +4,7 @@
 
 <head>
 
-<meta charset="utf-8">
+<meta charset="utf-8" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
 
@@ -12,7 +12,7 @@
 
 <meta name="author" content="Carl Boettiger" />
 
-<meta name="date" content="2016-12-20" />
+<meta name="date" content="2017-04-25" />
 
 <title>Creating EML</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Creating EML</h1>
 <h4 class="author"><em>Carl Boettiger</em></h4>
-<h4 class="date"><em>2016-12-20</em></h4>
+<h4 class="date"><em>2017-04-25</em></h4>
 
 
 
@@ -293,7 +293,7 @@ coverage &lt;-<span class="st"> </span>
                <span class="dt">altitudeUnits =</span> <span class="st">&quot;meter&quot;</span>)</code></pre></div>
 <p>Note that R’s fuzzy matching permits shorter arguments like <code>west</code> instead of the full argument name, <code>westBoundingCoordinate</code>, in the above example. This results in the following <code>coverage</code> element:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">coverage</code></pre></div>
-<pre><code>## &lt;coverage&gt;
+<pre><code>## &lt;coverage system=&quot;uuid&quot;&gt;
 ##   &lt;geographicCoverage&gt;
 ##     &lt;geographicDescription&gt;The Geographic region of the kelp bed data extends along the California coast, down through the coast of Baja, Mexico: Central California (Halfmoon Bay to Purisima Point), Southern California (Point Arguello to the United States/Mexico border including the Channel Islands) and Baja California (points south of the United States/Mexico border including several offshore islands)&lt;/geographicDescription&gt;
 ##     &lt;boundingCoordinates&gt;
@@ -339,10 +339,8 @@ methods &lt;-<span class="st"> </span><span class="kw">set_methods</span>(method
 <div id="creating-parties" class="section level2">
 <h2>Creating parties</h2>
 <p>Individuals and organizations appear in many capacities in an EML document. Meanwhile, R already has a native object class, <code>person</code> for describing individuals, which it uses in citations and package descriptions, among other things. We can use native R function <code>person()</code> to create an R <code>person</code> object. Often it is more convenient to use R’s coercion function, <code>as.person()</code>, to turn a string with standardized notation into a <code>person</code> class (Though this is not always reliable, for instance, in surnames containing whitespace). However it is constructed, a <code>person</code> class can then be coerced into the appropriate EML object like so:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">R_person &lt;-<span class="st"> </span><span class="kw">as.person</span>(<span class="st">&quot;Aaron Ellison &lt;fakeaddress@email.com&gt;&quot;</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">R_person &lt;-<span class="st"> </span><span class="kw">as.person</span>(<span class="st">&quot;Aaron Ellison &lt;fakeaddress@email.com&gt; [cre]&quot;</span>)
 aaron &lt;-<span class="kw">as</span>(R_person, <span class="st">&quot;creator&quot;</span>)</code></pre></div>
-<pre><code>## Warning: Person Aaron Ellison &lt;fakeaddress@email.com&gt; was not given any
-## role.</code></pre>
 <p>Likewise this method can be applied to a list of <code>person</code> objects:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">others &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="kw">as.person</span>(<span class="st">&quot;Benjamin Baiser [ctb]&quot;</span>), <span class="kw">as.person</span>(<span class="st">&quot;Jennifer Sirota [ctb]&quot;</span>))
 associatedParty &lt;-<span class="st"> </span><span class="kw">as</span>(others, <span class="st">&quot;associatedParty&quot;</span>)</code></pre></div>
@@ -432,8 +430,11 @@ abstract &lt;-<span class="st"> </span><span class="kw">as</span>(<span class="k
            <span class="dt">system =</span> <span class="st">&quot;uuid&quot;</span>, <span class="co"># type of identifier</span>
            <span class="dt">dataset =</span> dataset)</code></pre></div>
 <p>With our <code>eml</code> object fully constructed in R, we can now check that it is valid, conforming to all criteria set forth in the EML Schema. This will ensure that other researchers and other software can readily parse and understand the contents of our metadata file:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">eml_validate</span>(eml)</code></pre></div>
-<pre><code>## [1] TRUE</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">write_eml</span>(eml, <span class="st">&quot;eml.xml&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">eml_validate</span>(<span class="st">&quot;eml.xml&quot;</span>)</code></pre></div>
+<pre><code>## [1] TRUE
+## attr(,&quot;errors&quot;)
+## character(0)</code></pre>
 <p>The validator returns a status <code>0</code> to indicate success. Otherwise, the first error message encountered will be displayed. The most common reason for an error is probably the omission of a required metadata field.</p>
 <p>We can also write this <code>eml</code> metadata out as an XML file that can be published alongside our data files:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">write_eml</span>(eml, <span class="st">&quot;example.xml&quot;</span>)</code></pre></div>

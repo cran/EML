@@ -1,3 +1,9 @@
+## ---- eval = FALSE-------------------------------------------------------
+#  library("EML")
+#  f <- system.file("xsd/test/eml-i18n.xml", package = "EML")
+#  eml_view(f)
+#  
+
 ## ------------------------------------------------------------------------
 library("EML")
 f <- system.file("xsd/test/eml-i18n.xml", package = "EML")
@@ -11,7 +17,9 @@ coverage
 eml_get(coverage, "temporalCoverage")
 
 ## ------------------------------------------------------------------------
-eml_HARV <- read_eml("http://harvardforest.fas.harvard.edu/data/eml/hf001.xml")
+hf001 <- system.file("examples/hf001.xml", package="EML") 
+
+eml_HARV <- read_eml(hf001)
 
 ## ------------------------------------------------------------------------
 dt <- eml_get(eml_HARV, "dataTable")

@@ -4,7 +4,7 @@
 
 <head>
 
-<meta charset="utf-8">
+<meta charset="utf-8" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
 
@@ -12,9 +12,9 @@
 
 <meta name="author" content="Carl Boettiger" />
 
-<meta name="date" content="2016-12-20" />
+<meta name="date" content="2017-04-25" />
 
-<title>Parsing EML</title>
+<title>Reading and parsing EML</title>
 
 
 
@@ -68,12 +68,21 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 
 
-<h1 class="title toc-ignore">Parsing EML</h1>
+<h1 class="title toc-ignore">Reading and parsing EML</h1>
 <h4 class="author"><em>Carl Boettiger</em></h4>
-<h4 class="date"><em>2016-12-20</em></h4>
+<h4 class="date"><em>2017-04-25</em></h4>
 
 
 
+<div id="crude-view-of-an-eml-file" class="section level1">
+<h1>Crude view of an EML file</h1>
+<p>The function <code>eml_view()</code> allows, when the <code>listviewer</code> package is installed, to get a crude view of an EML file in the viewer. It can be useful for exploring the file.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;EML&quot;</span>)
+f &lt;-<span class="st"> </span><span class="kw">system.file</span>(<span class="st">&quot;xsd/test/eml-i18n.xml&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;EML&quot;</span>)
+<span class="kw">eml_view</span>(f)</code></pre></div>
+</div>
+<div id="parsing-an-eml-file" class="section level1">
+<h1>Parsing an EML file</h1>
 <p>The function <code>eml_get()</code> extracts a list of <em>all occurances</em> the desired metadata elements from a given <code>eml</code> object or part thereof.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;EML&quot;</span>)
 f &lt;-<span class="st"> </span><span class="kw">system.file</span>(<span class="st">&quot;xsd/test/eml-i18n.xml&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;EML&quot;</span>)
@@ -82,7 +91,7 @@ eml &lt;-<span class="st"> </span><span class="kw">read_eml</span>(f)</code></pr
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">coverage &lt;-<span class="st"> </span><span class="kw">eml_get</span>(eml, <span class="st">&quot;coverage&quot;</span>)
 coverage</code></pre></div>
 <pre><code>## [[1]]
-## &lt;coverage scope=&quot;document&quot;&gt;
+## &lt;coverage system=&quot;uuid&quot; scope=&quot;document&quot;&gt;
 ##   &lt;geographicCoverage scope=&quot;document&quot;&gt;
 ##     &lt;geographicDescription&gt;The Geographic region of the kelp bed data
 ##                  extends along the California coast, down through the coast of Baja,
@@ -147,7 +156,7 @@ coverage</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">eml_get</span>(coverage, <span class="st">&quot;temporalCoverage&quot;</span>)</code></pre></div>
 <pre><code>## An object of class &quot;ListOftemporalCoverage&quot;
 ## [[1]]
-## &lt;temporalCoverage scope=&quot;document&quot;&gt;
+## &lt;temporalCoverage system=&quot;uuid&quot; scope=&quot;document&quot;&gt;
 ##   &lt;rangeOfDates&gt;
 ##     &lt;beginDate&gt;
 ##       &lt;calendarDate&gt;1957-08-13&lt;/calendarDate&gt;
@@ -158,7 +167,9 @@ coverage</code></pre></div>
 ##   &lt;/rangeOfDates&gt;
 ## &lt;/temporalCoverage&gt;</code></pre>
 <p>Any EML element can be extracted in this way. Let’s try an example metadata file for a <code>dataset</code> that documents 11 seperate <code>dataTables</code>:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">eml_HARV &lt;-<span class="st"> </span><span class="kw">read_eml</span>(<span class="st">&quot;http://harvardforest.fas.harvard.edu/data/eml/hf001.xml&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">hf001 &lt;-<span class="st"> </span><span class="kw">system.file</span>(<span class="st">&quot;examples/hf001.xml&quot;</span>, <span class="dt">package=</span><span class="st">&quot;EML&quot;</span>) 
+
+eml_HARV &lt;-<span class="st"> </span><span class="kw">read_eml</span>(hf001)</code></pre></div>
 <p>How many <code>dataTable</code> entities are there in this dataset?</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dt &lt;-<span class="st"> </span><span class="kw">eml_get</span>(eml_HARV, <span class="st">&quot;dataTable&quot;</span>)
 <span class="kw">length</span>(dt)</code></pre></div>
@@ -169,7 +180,7 @@ urls &lt;-<span class="st"> </span><span class="kw">sapply</span>(dt, eml_get, <
 <p>Note that the latter example is the same as providing the more verbose arbument that specificies exactly where the <code>url</code> of interest is located:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">urls &lt;-<span class="st"> </span><span class="kw">sapply</span>(dt, function(x) x@physical[[<span class="dv">1</span>]]@distribution[[<span class="dv">1</span>]]@online@url)</code></pre></div>
 <p>this verbose syntax can be useful if there are multiple <code>url</code> elements in each <code>dataTable</code> metadata, and we are trying to get only certain ones and not others. Specifying the exact path in this way can also improve the speed of the command. For these reasons, programmatic use should consider this format, while the much simpler <code>eml_get</code> example shown above is practical for most interactive applications.</p>
-<p>All though the default return type for <code>eml_get</code> is just the S4 object (whose <code>print</code> method displays the corresponding XML structure used to represent that metadata), for a few commonly accessed complex elements, <code>eml_get</code> returns a more convenient <code>data.frame</code>. For instance, the <code>attributeList</code> describing the metadata for every column in an EML document is returned as a pair of <code>data.frame</code>s, one for all the attributes, and an second optional <code>data.frame</code> defnining the levels for the factors, if any are used. Let’s take a look:</p>
+<p>Although the default return type for <code>eml_get</code> is just the S4 object (whose <code>print</code> method displays the corresponding XML structure used to represent that metadata), for a few commonly accessed complex elements, <code>eml_get</code> returns a more convenient <code>data.frame</code>. For instance, the <code>attributeList</code> describing the metadata for every column in an EML document is returned as a pair of <code>data.frame</code>s, one for all the attributes, and an second optional <code>data.frame</code> defnining the levels for the factors, if any are used. Let’s take a look:</p>
 <p>Here we get the <code>attributeList</code> for each <code>dataTable</code> in the dataset. We check the length to confirm we get one <code>attributeList</code> for each <code>dataTable</code></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">attrs &lt;-<span class="st"> </span><span class="kw">eml_get</span>(dt, <span class="st">&quot;attributeList&quot;</span>) 
 <span class="kw">length</span>(attrs)</code></pre></div>
@@ -204,6 +215,7 @@ urls &lt;-<span class="st"> </span><span class="kw">sapply</span>(dt, eml_get, <
 ## 
 ## $factors
 ## NULL</code></pre>
+</div>
 
 
 
