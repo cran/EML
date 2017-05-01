@@ -1,7 +1,7 @@
 Package: EML
 Type: Package
 Title: Read and Write Ecological Metadata Language Files
-Version: 1.0.2
+Version: 1.0.3
 Authors@R: c(
     person("Carl", "Boettiger", role = c("aut", "cre"),
            email = "cboettig@gmail.com"),
@@ -31,10 +31,10 @@ Collate: 'classes.R' 'classes-stmml.R' 'coercions.R' 'eml_find.R'
         'set_unitList.R' 'show_methods.R' 'write_eml.R' 'xml_to_s4.R'
         'zzz.R'
 NeedsCompilation: no
-Packaged: 2017-04-25 17:18:33 UTC; rstudio
+Packaged: 2017-05-01 19:43:02 UTC; cboettig
 Author: Carl Boettiger [aut, cre],
   Matthew B. Jones [aut],
   Bryce Mecum [ctb],
   Maëlle Salmon [ctb]
 Repository: CRAN
-Date/Publication: 2017-04-25 23:32:03 UTC
+Date/Publication: 2017-05-01 22:13:08 UTC

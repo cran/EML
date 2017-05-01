@@ -1,3 +1,6 @@
+## ----include=FALSE-------------------------------------------------------
+has_pandoc <- rmarkdown::pandoc_available()
+
 ## ------------------------------------------------------------------------
 library("EML")
 
@@ -144,9 +147,13 @@ coverage <-
 ## ------------------------------------------------------------------------
 coverage
 
-## ------------------------------------------------------------------------
+## ----eval=has_pandoc-----------------------------------------------------
 methods_file <- system.file("examples/hf205-methods.docx", package = "EML")
 methods <- set_methods(methods_file)
+
+## ----include=FALSE, eval=!has_pandoc-------------------------------------
+#  ## placeholder if pandoc is not installed
+#  methods <- new("methods")
 
 ## ------------------------------------------------------------------------
 R_person <- as.person("Aaron Ellison <fakeaddress@email.com> [cre]")
@@ -224,7 +231,7 @@ that make use of the dataset must include proper acknowledgement. For
 more information on LTER Network data access and use policies, please
 see: http://www.lternet.edu/data/netpolicy.html."
 
-## ------------------------------------------------------------------------
+## ----eval=has_pandoc-----------------------------------------------------
 abstract_file <-  system.file("examples/hf205-abstract.md", package = "EML")
 abstract <- as(set_TextType(abstract_file), "abstract")
 
