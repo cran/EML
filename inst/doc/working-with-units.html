@@ -12,54 +12,287 @@
 
 <meta name="author" content="Carl Boettiger" />
 
-<meta name="date" content="2017-05-01" />
+<meta name="date" content="2019-04-21" />
 
 <title>Working with Units</title>
 
 
 
 <style type="text/css">code{white-space: pre;}</style>
-<style type="text/css">
-div.sourceCode { overflow-x: auto; }
-table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
-  margin: 0; padding: 0; vertical-align: baseline; border: none; }
-table.sourceCode { width: 100%; line-height: 100%; }
-td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
-td.sourceCode { padding-left: 5px; }
-code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code > span.dt { color: #902000; } /* DataType */
-code > span.dv { color: #40a070; } /* DecVal */
-code > span.bn { color: #40a070; } /* BaseN */
-code > span.fl { color: #40a070; } /* Float */
-code > span.ch { color: #4070a0; } /* Char */
-code > span.st { color: #4070a0; } /* String */
-code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code > span.ot { color: #007020; } /* Other */
-code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code > span.fu { color: #06287e; } /* Function */
-code > span.er { color: #ff0000; font-weight: bold; } /* Error */
-code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
-code > span.cn { color: #880000; } /* Constant */
-code > span.sc { color: #4070a0; } /* SpecialChar */
-code > span.vs { color: #4070a0; } /* VerbatimString */
-code > span.ss { color: #bb6688; } /* SpecialString */
-code > span.im { } /* Import */
-code > span.va { color: #19177c; } /* Variable */
-code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code > span.op { color: #666666; } /* Operator */
-code > span.bu { } /* BuiltIn */
-code > span.ex { } /* Extension */
-code > span.pp { color: #bc7a00; } /* Preprocessor */
-code > span.at { color: #7d9029; } /* Attribute */
-code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+<style type="text/css" data-origin="pandoc">
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; left: -4em; }
+pre.numberSource a.sourceLine::before
+  { content: attr(data-line-number);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' || rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#header {
+text-align: center;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61717; background-color: #e3d2d2; } 
 </style>
 
 
 
-<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23header%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%20code%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
 
 </head>
 
@@ -69,1195 +302,51 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 
 <h1 class="title toc-ignore">Working with Units</h1>
-<h4 class="author"><em>Carl Boettiger</em></h4>
-<h4 class="date"><em>2017-05-01</em></h4>
+<h4 class="author">Carl Boettiger</h4>
+<h4 class="date">2019-04-21</h4>
 
 
 
 <div id="overview" class="section level2">
 <h2>Overview</h2>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;EML&quot;</span>)</code></pre></div>
-<p>One essential role of EML metadata is in precisely defining the units in which data is measured. To make sure these units can be understood by (and thus potentially converted to other units by) a computer, it’s necessary to be rather precise about our choice of units. EML knows about a lot of commonly used units, referred to as “standardUnits,” already. If a unit is in EML’s <code>standardUnit</code> dictionary, we can refer to it without further explanation as long as wer are careful to use the precise <code>id</code> for that unit, as we will see below.</p>
+<p>One essential role of EML metadata is in precisely defining the units in which data is measured. To make sure these units can be understood by (and thus potentially converted to other units by) a computer, it’s necessary to be rather precise about our choice of units. EML knows about a lot of commonly used units, referred to as “standardUnits,” already. If a unit is in EML’s <code>standardUnit</code> dictionary, we can refer to it without further explanation as long as we’re careful to use the precise <code>id</code> for that unit, as we will see below.</p>
 <p>Sometimes data involves a unit that is not in <code>standardUnit</code> dictionary. In this case, the metadata must provide additional information about the unit, including how to convert the unit into the SI system. EML uses an existing standard, <a href="http://www.ch.ic.ac.uk/rzepa/codata2/">stmml</a>, to represent this information, which must be given in the <code>additionalMetadata</code> section of an EML file. The <code>stmml</code> standard is also used to specify EML’s own <code>standardUnit</code> definitions.</p>
+</div>
+<div id="add-a-custom-unit-to-eml" class="section level2">
+<h2>Add a custom unit to EML</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="kw">library</span>(<span class="st">&quot;EML&quot;</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" data-line-number="1">custom_units &lt;-<span class="st"> </span></a>
+<a class="sourceLine" id="cb2-2" data-line-number="2"><span class="st">  </span><span class="kw">data.frame</span>(<span class="dt">id =</span> <span class="st">&quot;speciesPerSquareMeter&quot;</span>, </a>
+<a class="sourceLine" id="cb2-3" data-line-number="3">             <span class="dt">unitType =</span> <span class="st">&quot;arealDensity&quot;</span>, </a>
+<a class="sourceLine" id="cb2-4" data-line-number="4">             <span class="dt">parentSI =</span> <span class="st">&quot;numberPerSquareMeter&quot;</span>, </a>
+<a class="sourceLine" id="cb2-5" data-line-number="5">             <span class="dt">multiplierToSI =</span> <span class="dv">1</span>, </a>
+<a class="sourceLine" id="cb2-6" data-line-number="6">             <span class="dt">description =</span> <span class="st">&quot;number of species per square meter&quot;</span>)</a>
+<a class="sourceLine" id="cb2-7" data-line-number="7"></a>
+<a class="sourceLine" id="cb2-8" data-line-number="8"></a>
+<a class="sourceLine" id="cb2-9" data-line-number="9">unitList &lt;-<span class="st"> </span><span class="kw">set_unitList</span>(custom_units)</a></code></pre></div>
+<p>Start with a minimal EML document</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" data-line-number="1">me &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">individualName =</span> <span class="kw">list</span>(<span class="dt">givenName =</span> <span class="st">&quot;Carl&quot;</span>, <span class="dt">surName =</span> <span class="st">&quot;Boettiger&quot;</span>))</a>
+<a class="sourceLine" id="cb3-2" data-line-number="2">my_eml &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">dataset =</span> <span class="kw">list</span>(</a>
+<a class="sourceLine" id="cb3-3" data-line-number="3">              <span class="dt">title =</span> <span class="st">&quot;A Minimal Valid EML Dataset&quot;</span>,</a>
+<a class="sourceLine" id="cb3-4" data-line-number="4">              <span class="dt">creator =</span> me,</a>
+<a class="sourceLine" id="cb3-5" data-line-number="5">              <span class="dt">contact =</span> me),</a>
+<a class="sourceLine" id="cb3-6" data-line-number="6">              <span class="dt">additionalMetadata =</span> <span class="kw">list</span>(<span class="dt">metadata =</span> <span class="kw">list</span>(</a>
+<a class="sourceLine" id="cb3-7" data-line-number="7">                <span class="dt">unitList =</span> unitList</a>
+<a class="sourceLine" id="cb3-8" data-line-number="8">              ))</a>
+<a class="sourceLine" id="cb3-9" data-line-number="9">            )</a></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" data-line-number="1"><span class="kw">write_eml</span>(my_eml, <span class="st">&quot;eml-with-units.xml&quot;</span>)</a>
+<a class="sourceLine" id="cb4-2" data-line-number="2"><span class="kw">eml_validate</span>(<span class="st">&quot;eml-with-units.xml&quot;</span>)</a></code></pre></div>
+<pre><code>## [1] TRUE
+## attr(,&quot;errors&quot;)
+## character(0)</code></pre>
+<p>Note: Custom units are widely misunderstood and misused in EML. See examples from <a href="https://gist.github.com/amoeba/67a23818dfca49904c7a54b0632d76bc#file-all-arcticdata-customUnits">custom-units</a></p>
 </div>
 <div id="reading-eml-parsing-unit-information-including-custom-unit-types" class="section level2">
 <h2>Reading EML: parsing unit information, including custom unit types</h2>
 <p>Let us start by examining the numeric attributes in an example EML file. First we read in the file:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">f &lt;-<span class="st"> </span><span class="kw">system.file</span>(<span class="st">&quot;xsd/test/eml-datasetWithUnits.xml&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;EML&quot;</span>)
-eml &lt;-<span class="st"> </span><span class="kw">read_eml</span>(f)</code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" data-line-number="1">f &lt;-<span class="st"> </span><span class="kw">system.file</span>(<span class="st">&quot;tests&quot;</span>, emld<span class="op">::</span><span class="kw">eml_version</span>(), <span class="st">&quot;eml-datasetWithUnits.xml&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;emld&quot;</span>)</a>
+<a class="sourceLine" id="cb6-2" data-line-number="2">eml &lt;-<span class="st"> </span><span class="kw">read_eml</span>(f)</a></code></pre></div>
 <p>We extract the <code>attributeList</code>, and examine the numeric attributes (e.g. those which have units):</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">attribute_tables &lt;-<span class="st"> </span><span class="kw">eml_get</span>(eml, <span class="st">&quot;attributeList&quot;</span>)
-
-
-a &lt;-<span class="st"> </span>attribute_tables$attributes
-numerics &lt;-<span class="st"> </span>a[a$domain ==<span class="st"> &quot;numericDomain&quot;</span>,]
-numerics</code></pre></div>
-<pre><code>##    attributeName        domain precision minimum maximum
-## 3             sr numericDomain      0.50       0    &lt;NA&gt;
-## 4         pctcov numericDomain      0.10       0     1e2
-## 5        avesr91 numericDomain      0.10       0    &lt;NA&gt;
-## 6        avesr92 numericDomain      0.10       0        
-## 7        avesr93 numericDomain      0.10       0        
-## 8        avesr94 numericDomain      0.10       0        
-## 9        avesr95 numericDomain      0.10       0        
-## 10       avesr96 numericDomain      0.10       0        
-## 11        MeanSR numericDomain      0.10       0        
-## 12       biomass numericDomain      0.01       0    &lt;NA&gt;
-## 13         sppm2 numericDomain      0.01       0    &lt;NA&gt;
-##                     unit numberType formatString definition pattern source
-## 3                 number       real         &lt;NA&gt;       &lt;NA&gt;    &lt;NA&gt;   &lt;NA&gt;
-## 4          dimensionless       real         &lt;NA&gt;       &lt;NA&gt;    &lt;NA&gt;   &lt;NA&gt;
-## 5                 second       real         &lt;NA&gt;       &lt;NA&gt;    &lt;NA&gt;   &lt;NA&gt;
-## 6     cubicFeetPerSecond       real         &lt;NA&gt;       &lt;NA&gt;    &lt;NA&gt;   &lt;NA&gt;
-## 7             cubicMeter       real         &lt;NA&gt;       &lt;NA&gt;    &lt;NA&gt;   &lt;NA&gt;
-## 8                 radian       real         &lt;NA&gt;       &lt;NA&gt;    &lt;NA&gt;   &lt;NA&gt;
-## 9                  meter       real         &lt;NA&gt;       &lt;NA&gt;    &lt;NA&gt;   &lt;NA&gt;
-## 10                  inch       real         &lt;NA&gt;       &lt;NA&gt;    &lt;NA&gt;   &lt;NA&gt;
-## 11              nanogram       real         &lt;NA&gt;       &lt;NA&gt;    &lt;NA&gt;   &lt;NA&gt;
-## 12   gramsPerSquareMeter       real         &lt;NA&gt;       &lt;NA&gt;    &lt;NA&gt;   &lt;NA&gt;
-## 13 speciesPerSquareMeter       real         &lt;NA&gt;       &lt;NA&gt;    &lt;NA&gt;   &lt;NA&gt;
-##                       attributeLabel storageType missingValueCode
-## 3                   Species Richness       float             &lt;NA&gt;
-## 4                      percent cover       float             &lt;NA&gt;
-## 5  Average Species Richness for 1991       float             &lt;NA&gt;
-## 6  Average Species Richness for 1992       float             &lt;NA&gt;
-## 7  Average Species Richness for 1993       float             &lt;NA&gt;
-## 8  Average Species Richness for 1994       float             &lt;NA&gt;
-## 9  Average Species Richness for 1995       float             &lt;NA&gt;
-## 10 Average Species Richness for 1996       float             &lt;NA&gt;
-## 11             mean species richness       float             &lt;NA&gt;
-## 12                           Biomass       float             &lt;NA&gt;
-## 13          Species Per Square Meter       float             &lt;NA&gt;
-##    missingValueCodeExplanation measurementScale
-## 3                         &lt;NA&gt;         interval
-## 4                         &lt;NA&gt;            ratio
-## 5                         &lt;NA&gt;            ratio
-## 6                         &lt;NA&gt;            ratio
-## 7                         &lt;NA&gt;            ratio
-## 8                         &lt;NA&gt;            ratio
-## 9                         &lt;NA&gt;            ratio
-## 10                        &lt;NA&gt;            ratio
-## 11                        &lt;NA&gt;            ratio
-## 12                        &lt;NA&gt;            ratio
-## 13                        &lt;NA&gt;            ratio
-##                                             attributeDefinition
-## 3                                      Species richness for CDR
-## 4               The percent ground cover on the field\n        
-## 5  The average species richness for the field in 1991\n        
-## 6  The average species richness for the field in 1992\n        
-## 7  The average species richness for the field in 1993\n        
-## 8  The average species richness for the field in 1994\n        
-## 9  The average species richness for the field in 1995\n        
-## 10 The average species richness for the field in 1996\n        
-## 11        the mean species richness from 1991 to 1996\n        
-## 12           The total biomass measured in this field\n        
-## 13                Calculated species per square meter\n</code></pre>
-<p>We see this data contains eleven columns containing numeric data, with metadata for the unit, precision, range, and number type (integer, real complex) given in the resulting table.</p>
-<p>EML knows about many standard units already, but a metadata file may occassionally need to define a unit that is not in the StandardUnit dictionary. We can use the function <code>is_standardUnit()</code> to quickly check if the units shown here are in EML’s dictionary:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">units &lt;-<span class="st"> </span>numerics$unit
-units[ !<span class="kw">is_standardUnit</span>(units) ]</code></pre></div>
-<pre><code>## [1] &quot;speciesPerSquareMeter&quot;</code></pre>
-<p>This shows us that the unit <code>speciesPerSquareMeter</code> is the only unit not in the Standard Unit Dictionary. We can have a look at the definitions for all units that <em>are</em> in the Standard Unit dictionary using the function <code>get_unitList()</code> with no arguments:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">standardUnits &lt;-<span class="st"> </span><span class="kw">get_unitList</span>()
-standardUnits$units</code></pre></div>
-<pre><code>##                                      id
-## 1                         dimensionless
-## 2                                second
-## 3                                 meter
-## 4                              kilogram
-## 5                                kelvin
-## 6                               coulomb
-## 7                                ampere
-## 8                                  mole
-## 9                               candela
-## 10                               number
-## 11                           cubicMeter
-## 12                        nominalMinute
-## 13                          nominalHour
-## 14                           nominalDay
-## 15                          nominalWeek
-## 16                          nominalYear
-## 17                      nominalLeapYear
-## 18                             nanogram
-## 19                            microgram
-## 20                            milligram
-## 21                            centigram
-## 22                             decigram
-## 23                                 gram
-## 24                             dekagram
-## 25                            hectogram
-## 26                             megagram
-## 27                                tonne
-## 28                                pound
-## 29                                  ton
-## 30                              celsius
-## 31                           fahrenheit
-## 32                            nanometer
-## 33                           micrometer
-## 34                               micron
-## 35                           millimeter
-## 36                           centimeter
-## 37                            decimeter
-## 38                            dekameter
-## 39                           hectometer
-## 40                            kilometer
-## 41                            megameter
-## 42                             angstrom
-## 43                                 inch
-## 44                              Foot_US
-## 45                                 foot
-## 46                      Foot_Gold_Coast
-## 47                               fathom
-## 48                         nauticalMile
-## 49                                 yard
-## 50                          Yard_Indian
-## 51                          Link_Clarke
-## 52                           Yard_Sears
-## 53                                 mile
-## 54                           nanosecond
-## 55                          microsecond
-## 56                          millisecond
-## 57                          centisecond
-## 58                           decisecond
-## 59                           dekasecond
-## 60                          hectosecond
-## 61                           kilosecond
-## 62                           megasecond
-## 63                               minute
-## 64                                 hour
-## 65                            kiloliter
-## 66                           microliter
-## 67                           milliliter
-## 68                                liter
-## 69                               gallon
-## 70                                quart
-## 71                               bushel
-## 72                            cubicInch
-## 73                                 pint
-## 74                               radian
-## 75                               degree
-## 76                                 grad
-## 77                            megahertz
-## 78                            kilohertz
-## 79                                hertz
-## 80                           millihertz
-## 81                               newton
-## 82                                joule
-## 83                              calorie
-## 84                   britishThermalUnit
-## 85                            footPound
-## 86                                lumen
-## 87                                  lux
-## 88                            becquerel
-## 89                                 gray
-## 90                              sievert
-## 91                                katal
-## 92                                henry
-## 93                             megawatt
-## 94                             kilowatt
-## 95                                 watt
-## 96                            milliwatt
-## 97                             megavolt
-## 98                             kilovolt
-## 99                                 volt
-## 100                           millivolt
-## 101                               farad
-## 102                                 ohm
-## 103                            ohmMeter
-## 104                              siemen
-## 105                               weber
-## 106                               tesla
-## 107                              pascal
-## 108                          megapascal
-## 109                          kilopascal
-## 110                          atmosphere
-## 111                                 bar
-## 112                            millibar
-## 113             kilogramsPerSquareMeter
-## 114                 gramsPerSquareMeter
-## 115            milligramsPerSquareMeter
-## 116                 kilogramsPerHectare
-## 117                     tonnePerHectare
-## 118                 poundsPerSquareInch
-## 119               kilogramPerCubicMeter
-## 120             milliGramsPerMilliLiter
-## 121                       gramsPerLiter
-## 122             milligramsPerCubicMeter
-## 123                  microgramsPerLiter
-## 124                  milligramsPerLiter
-## 125             gramsPerCubicCentimeter
-## 126                  gramsPerMilliliter
-## 127                 gramsPerLiterPerDay
-## 128                     litersPerSecond
-## 129                cubicMetersPerSecond
-## 130                  cubicFeetPerSecond
-## 131                         squareMeter
-## 132                                 are
-## 133                             hectare
-## 134                    squareKilometers
-## 135                   squareMillimeters
-## 136                   squareCentimeters
-## 137                                acre
-## 138                          squareFoot
-## 139                          squareYard
-## 140                          squareMile
-## 141                litersPerSquareMeter
-## 142                      bushelsPerAcre
-## 143                    litersPerHectare
-## 144              squareMeterPerKilogram
-## 145                     metersPerSecond
-## 146                        metersPerDay
-## 147                          feetPerDay
-## 148                       feetPerSecond
-## 149                         feetPerHour
-## 150                      yardsPerSecond
-## 151                        milesPerHour
-## 152                      milesPerSecond
-## 153                      milesPerMinute
-## 154                centimetersPerSecond
-## 155                millimetersPerSecond
-## 156                   centimeterPerYear
-## 157                               knots
-## 158                   kilometersPerHour
-## 159              metersPerSecondSquared
-## 160                          waveNumber
-## 161               cubicMeterPerKilogram
-## 162             cubicMicrometersPerGram
-## 163                amperePerSquareMeter
-## 164                      amperePerMeter
-## 165                   molePerCubicMeter
-## 166                            molarity
-## 167                            molality
-## 168               candelaPerSquareMeter
-## 169              metersSquaredPerSecond
-## 170                 metersSquaredPerDay
-## 171                   feetSquaredPerDay
-## 172   kilogramsPerMeterSquaredPerSecond
-## 173  gramsPerCentimeterSquaredPerSecond
-## 174         gramsPerMeterSquaredPerYear
-## 175               gramsPerHectarePerDay
-## 176          kilogramsPerHectarePerYear
-## 177     kilogramsPerMeterSquaredPerYear
-## 178                    molesPerKilogram
-## 179                        molesPerGram
-## 180                   millimolesPerGram
-## 181           molesPerKilogramPerSecond
-## 182           nanomolesPerGramPerSecond
-## 183                  kilogramsPerSecond
-## 184                       tonnesPerYear
-## 185                        gramsPerYear
-## 186               numberPerMeterSquared
-## 187           numberPerKilometerSquared
-## 188                 numberPerMeterCubed
-## 189                      numberPerLiter
-## 190                 numberPerMilliliter
-## 191                       metersPerGram
-## 192                       numberPerGram
-## 193                        gramsPerGram
-## 194                   microgramsPerGram
-## 195 cubicCentimetersPerCubicCentimeters
-##                                    name                       unitType
-## 1                         dimensionless                  dimensionless
-## 2                                second                           time
-## 3                                 meter                         length
-## 4                              kilogram                           mass
-## 5                                kelvin                    temperature
-## 6                               coulomb                         charge
-## 7                                ampere                        current
-## 8                                  mole                         amount
-## 9                               candela                     luminosity
-## 10                               number                  dimensionless
-## 11                           cubicMeter                         volume
-## 12                        nominalMinute                           time
-## 13                          nominalHour                           time
-## 14                           nominalDay                           time
-## 15                          nominalWeek                           time
-## 16                          nominalYear                           time
-## 17                      nominalLeapYear                           time
-## 18                             nanogram                           mass
-## 19                            microgram                           mass
-## 20                            milligram                           mass
-## 21                            centigram                           mass
-## 22                             decigram                           mass
-## 23                                 gram                           mass
-## 24                             dekagram                           mass
-## 25                            hectogram                           mass
-## 26                             megagram                           mass
-## 27                                tonne                           mass
-## 28                                pound                           &lt;NA&gt;
-## 29                                  ton                           &lt;NA&gt;
-## 30                              celsius                           &lt;NA&gt;
-## 31                           fahrenheit                           &lt;NA&gt;
-## 32                            nanometer                           &lt;NA&gt;
-## 33                           micrometer                           &lt;NA&gt;
-## 34                               micron                           &lt;NA&gt;
-## 35                           millimeter                           &lt;NA&gt;
-## 36                           centimeter                           &lt;NA&gt;
-## 37                            decimeter                           &lt;NA&gt;
-## 38                            dekameter                           &lt;NA&gt;
-## 39                           hectometer                           &lt;NA&gt;
-## 40                            kilometer                           &lt;NA&gt;
-## 41                            megameter                           &lt;NA&gt;
-## 42                             angstrom                           &lt;NA&gt;
-## 43                                 inch                           &lt;NA&gt;
-## 44                              Foot_US                           &lt;NA&gt;
-## 45                                 foot                           &lt;NA&gt;
-## 46                      Foot_Gold_Coast                           &lt;NA&gt;
-## 47                               fathom                           &lt;NA&gt;
-## 48                         nauticalMile                           &lt;NA&gt;
-## 49                                 yard                           &lt;NA&gt;
-## 50                          Yard_Indian                           &lt;NA&gt;
-## 51                          Link_Clarke                           &lt;NA&gt;
-## 52                           Yard_Sears                           &lt;NA&gt;
-## 53                                 mile                           &lt;NA&gt;
-## 54                           nanosecond                           &lt;NA&gt;
-## 55                          microsecond                           &lt;NA&gt;
-## 56                          millisecond                           &lt;NA&gt;
-## 57                          centisecond                           &lt;NA&gt;
-## 58                           decisecond                           &lt;NA&gt;
-## 59                           dekasecond                           &lt;NA&gt;
-## 60                          hectosecond                           &lt;NA&gt;
-## 61                           kilosecond                           &lt;NA&gt;
-## 62                           megasecond                           &lt;NA&gt;
-## 63                               minute                           &lt;NA&gt;
-## 64                                 hour                           &lt;NA&gt;
-## 65                            kiloliter                         volume
-## 66                           microliter                         volume
-## 67                           milliliter                         volume
-## 68                                liter                         volume
-## 69                               gallon                           &lt;NA&gt;
-## 70                                quart                           &lt;NA&gt;
-## 71                               bushel                         volume
-## 72                            cubicInch                         volume
-## 73                                 pint                           &lt;NA&gt;
-## 74                               radian                          angle
-## 75                               degree                          angle
-## 76                                 grad                          angle
-## 77                            megahertz                      frequency
-## 78                            kilohertz                      frequency
-## 79                                hertz                      frequency
-## 80                           millihertz                      frequency
-## 81                               newton                          force
-## 82                                joule                         energy
-## 83                              calorie                         energy
-## 84                   britishThermalUnit                         energy
-## 85                            footPound                         energy
-## 86                                lumen                     luminosity
-## 87                                  lux                    illuminance
-## 88                            becquerel        radionucleotideActivity
-## 89                                 gray                 specificEnergy
-## 90                              sievert                 doseEquivalent
-## 91                                katal              catalyticActivity
-## 92                                henry                     inductance
-## 93                             megawatt                          power
-## 94                             kilowatt                          power
-## 95                                 watt                          power
-## 96                            milliwatt                          power
-## 97                             megavolt            potentialDifference
-## 98                             kilovolt            potentialDifference
-## 99                                 volt            potentialDifference
-## 100                           millivolt            potentialDifference
-## 101                               farad                    capacitance
-## 102                                 ohm                     resistance
-## 103                            ohmMeter                    resistivity
-## 104                              siemen                    conductance
-## 105                               weber                   magneticFlux
-## 106                               tesla            magneticFluxDensity
-## 107                              pascal                       pressure
-## 108                          megapascal                       pressure
-## 109                          kilopascal                       pressure
-## 110                          atmosphere                       pressure
-## 111                                 bar                       pressure
-## 112                            millibar                       pressure
-## 113             kilogramsPerSquareMeter               arealMassDensity
-## 114                 gramsPerSquareMeter               arealMassDensity
-## 115            milligramsPerSquareMeter               arealMassDensity
-## 116                 kilogramsPerHectare               arealMassDensity
-## 117                     tonnePerHectare               arealMassDensity
-## 118                 poundsPerSquareInch               arealMassDensity
-## 119               kilogramPerCubicMeter                    massDensity
-## 120             milliGramsPerMilliLiter                    massDensity
-## 121                       gramsPerLiter                    massDensity
-## 122             milligramsPerCubicMeter                    massDensity
-## 123                  microgramsPerLiter                    massDensity
-## 124                  milligramsPerLiter                    massDensity
-## 125             gramsPerCubicCentimeter                    massDensity
-## 126                  gramsPerMilliliter                    massDensity
-## 127                 gramsPerLiterPerDay      volumetricMassDensityRate
-## 128                     litersPerSecond                 volumetricRate
-## 129                cubicMetersPerSecond                 volumetricRate
-## 130                  cubicFeetPerSecond                 volumetricRate
-## 131                         squareMeter                           area
-## 132                                 are                           area
-## 133                             hectare                           area
-## 134                    squareKilometers                           area
-## 135                   squareMillimeters                           area
-## 136                   squareCentimeters                           area
-## 137                                acre                           area
-## 138                          squareFoot                           area
-## 139                          squareYard                           area
-## 140                          squareMile                           area
-## 141                litersPerSquareMeter                 volumetricArea
-## 142                      bushelsPerAcre                 volumetricArea
-## 143                    litersPerHectare                 volumetricArea
-## 144              squareMeterPerKilogram                   specificArea
-## 145                     metersPerSecond                          speed
-## 146                        metersPerDay                          speed
-## 147                          feetPerDay                          speed
-## 148                       feetPerSecond                          speed
-## 149                         feetPerHour                          speed
-## 150                      yardsPerSecond                          speed
-## 151                        milesPerHour                          speed
-## 152                      milesPerSecond                          speed
-## 153                      milesPerMinute                          speed
-## 154                centimetersPerSecond                          speed
-## 155                millimetersPerSecond                          speed
-## 156                   centimeterPerYear                          speed
-## 157                               knots                          speed
-## 158                   kilometersPerHour                          speed
-## 159              metersPerSecondSquared                   acceleration
-## 160                          waveNumber               lengthReciprocal
-## 161               cubicMeterPerKilogram                 specificVolume
-## 162             cubicMicrometersPerGram                 specificVolume
-## 163                amperePerSquareMeter                 currentDensity
-## 164                      amperePerMeter          magneticFieldStrength
-## 165                   molePerCubicMeter amountOfSubstanceConcentration
-## 166                            molarity amountOfSubstanceConcentration
-## 167                            molality        amountOfSubstanceWeight
-## 168               candelaPerSquareMeter                      luminance
-## 169              metersSquaredPerSecond                 transmissivity
-## 170                 metersSquaredPerDay                 transmissivity
-## 171                   feetSquaredPerDay                 transmissivity
-## 172   kilogramsPerMeterSquaredPerSecond           arealMassDensityRate
-## 173  gramsPerCentimeterSquaredPerSecond           arealMassDensityRate
-## 174         gramsPerMeterSquaredPerYear           arealMassDensityRate
-## 175               gramsPerHectarePerDay           arealMassDensityRate
-## 176          kilogramsPerHectarePerYear           arealMassDensityRate
-## 177     kilogramsPerMeterSquaredPerYear           arealMassDensityRate
-## 178                    molesPerKilogram        amountOfSubstanceWeight
-## 179                        molesPerGram        amountOfSubstanceWeight
-## 180                   millimolesPerGram        amountOfSubstanceWeight
-## 181           molesPerKilogramPerSecond    amountOfSubstanceWeightFlux
-## 182           nanomolesPerGramPerSecond    amountOfSubstanceWeightFlux
-## 183                  kilogramsPerSecond                       massFlux
-## 184                       tonnesPerYear                       massFlux
-## 185                        gramsPerYear                       massFlux
-## 186               numberPerMeterSquared                   arealDensity
-## 187           numberPerKilometerSquared                   arealDensity
-## 188                 numberPerMeterCubed              volumetricDensity
-## 189                      numberPerLiter              volumetricDensity
-## 190                 numberPerMilliliter              volumetricDensity
-## 191                       metersPerGram             massSpecificLength
-## 192                       numberPerGram              massSpecificCount
-## 193                        gramsPerGram                    massPerMass
-## 194                   microgramsPerGram                    massPerMass
-## 195 cubicCentimetersPerCubicCentimeters                volumePerVolume
-##                              parentSI       multiplierToSI constantToSI
-## 1                                &lt;NA&gt;                 &lt;NA&gt;         &lt;NA&gt;
-## 2                                &lt;NA&gt;                    1         &lt;NA&gt;
-## 3                                &lt;NA&gt;                    1         &lt;NA&gt;
-## 4                                &lt;NA&gt;                    1         &lt;NA&gt;
-## 5                                &lt;NA&gt;                    1         &lt;NA&gt;
-## 6                                &lt;NA&gt;                    1         &lt;NA&gt;
-## 7                                &lt;NA&gt;                    1         &lt;NA&gt;
-## 8                                &lt;NA&gt;                    1         &lt;NA&gt;
-## 9                                &lt;NA&gt;                    1         &lt;NA&gt;
-## 10                               &lt;NA&gt;                 &lt;NA&gt;         &lt;NA&gt;
-## 11                               &lt;NA&gt;                    1         &lt;NA&gt;
-## 12                             second                   60         &lt;NA&gt;
-## 13                             second                 3600         &lt;NA&gt;
-## 14                             second                86400         &lt;NA&gt;
-## 15                             second               604800         &lt;NA&gt;
-## 16                             second             31536000         &lt;NA&gt;
-## 17                             second             31622400         &lt;NA&gt;
-## 18                           kilogram       0.000000000001         &lt;NA&gt;
-## 19                           kilogram          0.000000001         &lt;NA&gt;
-## 20                           kilogram             0.000001         &lt;NA&gt;
-## 21                           kilogram              0.00001         &lt;NA&gt;
-## 22                           kilogram               0.0001         &lt;NA&gt;
-## 23                           kilogram                0.001         &lt;NA&gt;
-## 24                           kilogram                 0.01         &lt;NA&gt;
-## 25                           kilogram                  0.1         &lt;NA&gt;
-## 26                           kilogram                 1000         &lt;NA&gt;
-## 27                           kilogram                 1000         &lt;NA&gt;
-## 28                           kilogram               0.4536         &lt;NA&gt;
-## 29                           kilogram             907.1999         &lt;NA&gt;
-## 30                             kelvin                    1       273.18
-## 31                             kelvin                0.556      255.402
-## 32                              meter          0.000000001         &lt;NA&gt;
-## 33                              meter             0.000001         &lt;NA&gt;
-## 34                              meter             0.000001         &lt;NA&gt;
-## 35                              meter                0.001         &lt;NA&gt;
-## 36                              meter                 0.01         &lt;NA&gt;
-## 37                              meter                  0.1         &lt;NA&gt;
-## 38                              meter                   10         &lt;NA&gt;
-## 39                              meter                  100         &lt;NA&gt;
-## 40                              meter                 1000         &lt;NA&gt;
-## 41                              meter              1000000         &lt;NA&gt;
-## 42                              meter         0.0000000001         &lt;NA&gt;
-## 43                              meter               0.0254         &lt;NA&gt;
-## 44                              meter               0.3048         &lt;NA&gt;
-## 45                              meter               0.3048         &lt;NA&gt;
-## 46                              meter            0.3047997         &lt;NA&gt;
-## 47                              meter               1.8288         &lt;NA&gt;
-## 48                              meter                 1852         &lt;NA&gt;
-## 49                              meter               0.9144         &lt;NA&gt;
-## 50                              meter 0.914398530744440774         &lt;NA&gt;
-## 51                              meter         0.2011661949         &lt;NA&gt;
-## 52                              meter  0.91439841461602867         &lt;NA&gt;
-## 53                              meter             1609.344         &lt;NA&gt;
-## 54                             second          0.000000001         &lt;NA&gt;
-## 55                             second             0.000001         &lt;NA&gt;
-## 56                             second                0.001         &lt;NA&gt;
-## 57                             second                 0.01         &lt;NA&gt;
-## 58                             second                  0.1         &lt;NA&gt;
-## 59                             second                   10         &lt;NA&gt;
-## 60                             second                  100         &lt;NA&gt;
-## 61                             second                 1000         &lt;NA&gt;
-## 62                             second              1000000         &lt;NA&gt;
-## 63                             second                   60         &lt;NA&gt;
-## 64                             second                 3600         &lt;NA&gt;
-## 65                         cubicMeter                    1         &lt;NA&gt;
-## 66                         cubicMeter          0.000000001         &lt;NA&gt;
-## 67                         cubicMeter             0.000001         &lt;NA&gt;
-## 68                         cubicMeter                0.001         &lt;NA&gt;
-## 69                              liter             3.785412         &lt;NA&gt;
-## 70                              liter             0.946353         &lt;NA&gt;
-## 71                              liter             0.035239         &lt;NA&gt;
-## 72                              liter       0.000016387064         &lt;NA&gt;
-## 73                              liter             0.473176         &lt;NA&gt;
-## 74                               &lt;NA&gt;                    1         &lt;NA&gt;
-## 75                             radian         0.0174532924         &lt;NA&gt;
-## 76                             radian             0.015707         &lt;NA&gt;
-## 77                              hertz              1000000         &lt;NA&gt;
-## 78                              hertz                 1000         &lt;NA&gt;
-## 79                               &lt;NA&gt;                    1         &lt;NA&gt;
-## 80                              hertz             0.000001         &lt;NA&gt;
-## 81                               &lt;NA&gt;                    1         &lt;NA&gt;
-## 82                               &lt;NA&gt;                    1         &lt;NA&gt;
-## 83                              joule               4.1868         &lt;NA&gt;
-## 84                              joule            1055.0559         &lt;NA&gt;
-## 85                              joule             1.355818         &lt;NA&gt;
-## 86                               &lt;NA&gt;                    1         &lt;NA&gt;
-## 87                               &lt;NA&gt;                    1         &lt;NA&gt;
-## 88                               &lt;NA&gt;                    1         &lt;NA&gt;
-## 89                               &lt;NA&gt;                    1         &lt;NA&gt;
-## 90                               &lt;NA&gt;                    1         &lt;NA&gt;
-## 91                               &lt;NA&gt;                    1         &lt;NA&gt;
-## 92                               &lt;NA&gt;                    1         &lt;NA&gt;
-## 93                               watt              1000000         &lt;NA&gt;
-## 94                               watt                 1000         &lt;NA&gt;
-## 95                               &lt;NA&gt;                    1         &lt;NA&gt;
-## 96                               watt                0.001         &lt;NA&gt;
-## 97                               volt              1000000         &lt;NA&gt;
-## 98                               volt                 1000         &lt;NA&gt;
-## 99                               &lt;NA&gt;                    1         &lt;NA&gt;
-## 100                              volt                0.001         &lt;NA&gt;
-## 101                              &lt;NA&gt;                    1         &lt;NA&gt;
-## 102                              &lt;NA&gt;                    1         &lt;NA&gt;
-## 103                              &lt;NA&gt;                    1         &lt;NA&gt;
-## 104                              &lt;NA&gt;                    1         &lt;NA&gt;
-## 105                              &lt;NA&gt;                    1         &lt;NA&gt;
-## 106                              &lt;NA&gt;                    1         &lt;NA&gt;
-## 107                              &lt;NA&gt;                    1         &lt;NA&gt;
-## 108                            pascal              1000000         &lt;NA&gt;
-## 109                            pascal                 1000         &lt;NA&gt;
-## 110                            pascal               101325         &lt;NA&gt;
-## 111                            pascal               100000         &lt;NA&gt;
-## 112                            pascal                  100         &lt;NA&gt;
-## 113                              &lt;NA&gt;                    1         &lt;NA&gt;
-## 114           kilogramsPerSquareMeter                0.001         &lt;NA&gt;
-## 115           kilogramsPerSquareMeter             0.000001         &lt;NA&gt;
-## 116           kilogramsPerSquareMeter               0.0001         &lt;NA&gt;
-## 117           kilogramsPerSquareMeter                  0.1         &lt;NA&gt;
-## 118           kilogramsPerSquareMeter                17.85         &lt;NA&gt;
-## 119                              &lt;NA&gt;                    1         &lt;NA&gt;
-## 120            kilogramsPerCubicMeter                    1         &lt;NA&gt;
-## 121            kilogramsPerCubicMeter                    1         &lt;NA&gt;
-## 122            kilogramsPerCubicMeter             0.000001         &lt;NA&gt;
-## 123            kilogramsPerCubicMeter             0.000001         &lt;NA&gt;
-## 124            kilogramsPerCubicMeter                0.001         &lt;NA&gt;
-## 125            kilogramsPerCubicMeter                 1000         &lt;NA&gt;
-## 126            kilogramsPerCubicMeter                 1000         &lt;NA&gt;
-## 127                              &lt;NA&gt;                    1         &lt;NA&gt;
-## 128                              &lt;NA&gt;                    1         &lt;NA&gt;
-## 129                   litersPerSecond                    1         &lt;NA&gt;
-## 130                   litersPerSecond            28.316874         &lt;NA&gt;
-## 131                              &lt;NA&gt;                    1         &lt;NA&gt;
-## 132                       squareMeter                  100         &lt;NA&gt;
-## 133                       squareMeter                10000         &lt;NA&gt;
-## 134                       squareMeter              1000000         &lt;NA&gt;
-## 135                       squareMeter             0.000001         &lt;NA&gt;
-## 136                       squareMeter               0.0001         &lt;NA&gt;
-## 137                       squareMeter            4046.8564         &lt;NA&gt;
-## 138                       squareMeter             0.092903         &lt;NA&gt;
-## 139                       squareMeter             0.836131         &lt;NA&gt;
-## 140                       squareMeter        2589998.49806         &lt;NA&gt;
-## 141                              &lt;NA&gt;                    1         &lt;NA&gt;
-## 142              litersPerSquareMeter              0.00870         &lt;NA&gt;
-## 143              litersPerSquareMeter               0.0001         &lt;NA&gt;
-## 144                              &lt;NA&gt;                    1         &lt;NA&gt;
-## 145                   metersPerSecond                    1         &lt;NA&gt;
-## 146                              &lt;NA&gt;          .0000115741         &lt;NA&gt;
-## 147                   metersPerSecond        0.00000352778         &lt;NA&gt;
-## 148                   metersPerSecond               0.3048         &lt;NA&gt;
-## 149                   metersPerSecond          0.000084667         &lt;NA&gt;
-## 150                   metersPerSecond               0.9144         &lt;NA&gt;
-## 151                   metersPerSecond              0.44704         &lt;NA&gt;
-## 152                   metersPerSecond             1609.344         &lt;NA&gt;
-## 153                   metersPerSecond              26.8224         &lt;NA&gt;
-## 154                   metersPerSecond                 0.01         &lt;NA&gt;
-## 155                   metersPerSecond                0.001         &lt;NA&gt;
-## 156                   metersPerSecond    0.000000000317098         &lt;NA&gt;
-## 157                   metersPerSecond             0.514444         &lt;NA&gt;
-## 158                   metersPerSecond               0.2778         &lt;NA&gt;
-## 159                              &lt;NA&gt;                    1         &lt;NA&gt;
-## 160                              &lt;NA&gt;                    1         &lt;NA&gt;
-## 161                              &lt;NA&gt;                    1         &lt;NA&gt;
-## 162             cubicMeterPerKilogram    0.000000000000001         &lt;NA&gt;
-## 163                              &lt;NA&gt;                    1         &lt;NA&gt;
-## 164                              &lt;NA&gt;                    1         &lt;NA&gt;
-## 165                              &lt;NA&gt;                    1         &lt;NA&gt;
-## 166                molesPerCubicMeter                 1000         &lt;NA&gt;
-## 167                              &lt;NA&gt;                    1         &lt;NA&gt;
-## 168                              &lt;NA&gt;                    1         &lt;NA&gt;
-## 169                              &lt;NA&gt;                    1         &lt;NA&gt;
-## 170            metersSquaredPerSecond                86400         &lt;NA&gt;
-## 171            metersSquaredPerSecond          0.000124586         &lt;NA&gt;
-## 172                              &lt;NA&gt;                    1         &lt;NA&gt;
-## 173 kilogramsPerMeterSquaredPerSecond                  0.1         &lt;NA&gt;
-## 174 kilogramsPerMeterSquaredPerSecond   0.0000000000317098         &lt;NA&gt;
-## 175 kilogramsPerMeterSquaredPerSecond   0.0000000000011574         &lt;NA&gt;
-## 176 kilogramsPerMeterSquaredPerSecond             0.000317         &lt;NA&gt;
-## 177 kilogramsPerMeterSquaredPerSecond           0000000317         &lt;NA&gt;
-## 178                              &lt;NA&gt;                    1         &lt;NA&gt;
-## 179                  molesPerKilogram                 1000         &lt;NA&gt;
-## 180                  molesPerKilogram                    1         &lt;NA&gt;
-## 181                              &lt;NA&gt;                    1         &lt;NA&gt;
-## 182         molesPerKilogramPerSecond             0.000001         &lt;NA&gt;
-## 183                              &lt;NA&gt;                    1         &lt;NA&gt;
-## 184                kilogramsPerSecond            0.0000317         &lt;NA&gt;
-## 185                kilogramsPerSecond      0.0000000000317         &lt;NA&gt;
-## 186                              &lt;NA&gt;                    1         &lt;NA&gt;
-## 187             numberPerMeterSquared             0.000001         &lt;NA&gt;
-## 188                              &lt;NA&gt;                    1         &lt;NA&gt;
-## 189               numberPerMeterCubed                0.001         &lt;NA&gt;
-## 190               numberPerMeterCubed             0.000001         &lt;NA&gt;
-## 191                              &lt;NA&gt;                    1         &lt;NA&gt;
-## 192                              &lt;NA&gt;                    1         &lt;NA&gt;
-## 193                              &lt;NA&gt;                    1         &lt;NA&gt;
-## 194                      gramsPerGram             0.000001         &lt;NA&gt;
-## 195                              &lt;NA&gt;                    1         &lt;NA&gt;
-##     abbreviation
-## 1           &lt;NA&gt;
-## 2            sec
-## 3              m
-## 4             kg
-## 5              K
-## 6              C
-## 7              A
-## 8            mol
-## 9             cd
-## 10          &lt;NA&gt;
-## 11            m³
-## 12          &lt;NA&gt;
-## 13          &lt;NA&gt;
-## 14          &lt;NA&gt;
-## 15          &lt;NA&gt;
-## 16          &lt;NA&gt;
-## 17          &lt;NA&gt;
-## 18            ng
-## 19            μg
-## 20            mg
-## 21            cg
-## 22            dg
-## 23             g
-## 24           dag
-## 25            hg
-## 26            Mg
-## 27             T
-## 28           lbs
-## 29           ton
-## 30             C
-## 31             F
-## 32            nm
-## 33            μm
-## 34             μ
-## 35            mm
-## 36            cm
-## 37            dm
-## 38           dam
-## 39            hm
-## 40            km
-## 41            Mm
-## 42             Å
-## 43            in
-## 44          usft
-## 45            ft
-## 46          gcft
-## 47          &lt;NA&gt;
-## 48          &lt;NA&gt;
-## 49          yard
-## 50          &lt;NA&gt;
-## 51          &lt;NA&gt;
-## 52          &lt;NA&gt;
-## 53          mile
-## 54          nsec
-## 55          μsec
-## 56          msec
-## 57          csec
-## 58          dsec
-## 59         dasec
-## 60          hsec
-## 61          ksec
-## 62          Msec
-## 63           min
-## 64            hr
-## 65            kL
-## 66            μl
-## 67            ml
-## 68             L
-## 69           gal
-## 70            qt
-## 71             b
-## 72           in³
-## 73          pint
-## 74           rad
-## 75             º
-## 76          grad
-## 77           MHz
-## 78           KHz
-## 79            Hz
-## 80           mHz
-## 81             N
-## 82             J
-## 83           cal
-## 84           btu
-## 85          &lt;NA&gt;
-## 86            lm
-## 87            lx
-## 88            Bq
-## 89            Gy
-## 90            Sv
-## 91           kat
-## 92             H
-## 93            MW
-## 94            kW
-## 95             W
-## 96            mW
-## 97            MV
-## 98            kV
-## 99             V
-## 100           mV
-## 101            F
-## 102            Ω
-## 103           Ωm
-## 104            S
-## 105           Wb
-## 106            T
-## 107           Pa
-## 108          MPa
-## 109          kPa
-## 110          atm
-## 111          bar
-## 112         mbar
-## 113        kg/m²
-## 114         g/m²
-## 115        mg/m²
-## 116         &lt;NA&gt;
-## 117         &lt;NA&gt;
-## 118      lbs/in²
-## 119         &lt;NA&gt;
-## 120        kg/m³
-## 121          g/l
-## 122        mg/m³
-## 123         μg/l
-## 124         mg/l
-## 125        g/cm³
-## 126         g/ml
-## 127         &lt;NA&gt;
-## 128          l/s
-## 129         m³/s
-## 130      ft³/sec
-## 131           m²
-## 132            a
-## 133           ha
-## 134         &lt;NA&gt;
-## 135         &lt;NA&gt;
-## 136         &lt;NA&gt;
-## 137            a
-## 138          ft²
-## 139          yd²
-## 140        mile²
-## 141         l/m²
-## 142         &lt;NA&gt;
-## 143         &lt;NA&gt;
-## 144        m²/kg
-## 145          m/s
-## 146        m/day
-## 147       ft/day
-## 148         ft/s
-## 149        ft/hr
-## 150         yd/s
-## 151          mph
-## 152          mps
-## 153          mpm
-## 154         cm/s
-## 155         mm/s
-## 156      cm/year
-## 157         &lt;NA&gt;
-## 158        km/hr
-## 159         m/s²
-## 160         &lt;NA&gt;
-## 161        m³/kg
-## 162       μm³/kg
-## 163         A/m²
-## 164          A/m
-## 165         &lt;NA&gt;
-## 166            M
-## 167            m
-## 168        cd/m²
-## 169         m²/s
-## 170       m²/day
-## 171      ft²/day
-## 172         &lt;NA&gt;
-## 173         &lt;NA&gt;
-## 174         &lt;NA&gt;
-## 175         &lt;NA&gt;
-## 176         &lt;NA&gt;
-## 177         &lt;NA&gt;
-## 178         &lt;NA&gt;
-## 179         &lt;NA&gt;
-## 180         &lt;NA&gt;
-## 181         &lt;NA&gt;
-## 182         &lt;NA&gt;
-## 183         kg/s
-## 184         &lt;NA&gt;
-## 185         g/yr
-## 186         &lt;NA&gt;
-## 187         &lt;NA&gt;
-## 188         &lt;NA&gt;
-## 189         &lt;NA&gt;
-## 190         &lt;NA&gt;
-## 191          m/g
-## 192         &lt;NA&gt;
-## 193         &lt;NA&gt;
-## 194         &lt;NA&gt;
-## 195         &lt;NA&gt;
-##                                                                                description
-## 1                                a designation asserting the absence of an associated unit
-## 2                                                                          SI unit of time
-## 3                                                                        SI unit of length
-## 4                                                                          SI unit of mass
-## 5                                                                   SI unit of temperature
-## 6                                                                        SI unit of charge
-## 7                                                            SI unit of electrical current
-## 8                                                              SI unit of substance amount
-## 9                                                                    SI unit of luminosity
-## 10                                                                                a number
-## 11                                                                             cubic meter
-## 12                                           one minute excluding leap seconds, 60 seconds
-## 13                                           one hour excluding leap seconds, 3600 seconds
-## 14                                           one day excluding leap seconds, 86400 seconds
-## 15                                          one day excluding leap seconds, 604800 seconds
-## 16                         one year excluding leap seconds and leap days, 31536000 seconds
-## 17                               one 366 day year excluding leap seconds, 31622400 seconds
-## 18                                                                       0.000000000001 kg
-## 19                                                                          0.000000001 kg
-## 20                                                                             0.000001 kg
-## 21                                                                              0.00001 kg
-## 22                                                                               0.0001 kg
-## 23                                                                                0.001 kg
-## 24                                                                                  .01 kg
-## 25                                                                                   .1 kg
-## 26                                                                                 1000 kg
-## 27                                                                     metric ton or tonne
-## 28                                             1 pound in the Avoirdupois (commerce) scale
-## 29                                                      standard US (short) ton = 2000 lbs
-## 30                                                            A common unit of temperature
-## 31                    An obsolescent unit of temperature still used in popular meteorology
-## 32                                                                       .000000001 meters
-## 33                                                                          .000001 meters
-## 34                                                                          .000001 meters
-## 35                                                                             .001 meters
-## 36                                                                              .01 meters
-## 37                                                                               .1 meters
-## 38                                                                               10 meters
-## 39                                                                              100 meters
-## 40                                                                             1000 meters
-## 41                                                                          1000000 meters
-## 42                                                                     1/10000000000 meter
-## 43                                                           An imperial measure of length
-## 44                                                                               12 inches
-## 45                                                                               12 inches
-## 46                                                                               12 inches
-## 47                                                                                  6 feet
-## 48                                                                           nautical mile
-## 49                                                                                  3 feet
-## 50  This is an ESRI unit and the multiplier comes from ESRI.  It\n    may not be accurate.
-## 51  This is an ESRI unit and the multiplier comes from ESRI.  It\n    may not be accurate.
-## 52  This is an ESRI unit and the multiplier comes from ESRI.  It\n    may not be accurate.
-## 53                                                              5280 ft or 1609.344 meters
-## 54                                                                   1/1000000 of a second
-## 55                                                                    1/100000 of a second
-## 56                                                                      1/1000 of a second
-## 57                                                                       1/100 of a second
-## 58                                                                        1/10 of a second
-## 59                                                                              10 seconds
-## 60                                                                             100 seconds
-## 61                                                                            1000 seconds
-## 62                                                                         1000000 seconds
-## 63                                                                              60 seconds
-## 64                                                                            3600 seconds
-## 65                                                                           1 cubic meter
-## 66                                                                    1/1000000 of a liter
-## 67                                                                       1/1000 of a liter
-## 68                                                                               1000 cm^3
-## 69                                                                        US liquid gallon
-## 70                                                                         US liquid quart
-## 71                                                              1 bushel = 35.23907 liters
-## 72                                                                              cubic inch
-## 73                                                                          US liquid pint
-## 74                                                    2 pi radians comprise a unit circle.
-## 75                                                      360 degrees comprise a unit circle
-## 76                                      a plane angle equivalent to 1/400 of a full circle
-## 77                                                                               megahertz
-## 78                                                                               kilohertz
-## 79                                                                                   hertz
-## 80                                                                              millihertz
-## 81                                                                                  newton
-## 82                                                                             joule = N*m
-## 83                                                                        1 cal = 4.1868 J
-## 84                                                                     1 btu = 1055.0559 J
-## 85                                                                   1 ft-lbs = 1.355818 J
-## 86                                                                                   lumen
-## 87                                                                                     lux
-## 88                                                                               becquerel
-## 89                                                                                    gray
-## 90                                                                                 sievert
-## 91                                                                                   katal
-## 92                                                                                   henry
-## 93                                                                                megawatt
-## 94                                                                                kilowatt
-## 95                                                                              watt = J/s
-## 96                                                                               milliwatt
-## 97                                                                                megavolt
-## 98                                                                                kilovolt
-## 99                                                                                    volt
-## 100                                                                              millivolt
-## 101                                                                                  farad
-## 102                                                                                    ohm
-## 103                                                                             ohm meters
-## 104                                                                                 siemen
-## 105                                                                                  weber
-## 106                                                                                  tesla
-## 107                                                                                 pascal
-## 108                                                                             megapascal
-## 109                                                                             kilopascal
-## 110                                                         1 atmosphere = 101325 pascals 
-## 111                                                                 1 bar = 100000 pascals
-## 112                                                                               millibar
-## 113                                                             kilograms per square meter
-## 114                                                                 grams per square meter
-## 115                                                            milligrams Per Square Meter
-## 116                                                                  kilograms per hectare
-## 117                                                        metric ton or tonne per hectare
-## 118                                                                        lbs/square inch
-## 119                                                               kilogram per cubic meter
-## 120                                                              milligrams per milliliter
-## 121                                                                        grams per liter
-## 122                                                             milligrams Per Cubic Meter
-## 123                                                                     micrograms / liter
-## 124                                                                     milligrams / liter
-## 125                                                             grams per cubic centimeter
-## 126                                                                   grams per milliliter
-## 127                                                              grams Per (Liter Per Day)
-## 128                                                                      liters per second
-## 129                                                                cubic meters per second
-## 130                                                                  cubic feet per second
-## 131                                                                          square meters
-## 132                                                                      100 square meters
-## 133                                                        1 hectare is 10^4 square meters
-## 134                                                                      square kilometers
-## 135                                                                      square millmeters
-## 136                                                                     square centimeters
-## 137                           1 acre = 4046.8564 square meters or 1 hectare = 2.4710 acres
-## 138                                                                      12 inches squared
-## 139                                                                      36 inches squared
-## 140                                                                         1 mile squared
-## 141                                                                liters per square meter
-## 142         bushels per acre -- 1 bushel = 35.23907 liters/1 acre = 4046.8564 squareMeters
-## 143                                                                     liters per hectare
-## 144                                                             square meters per kilogram
-## 145                                                                      meters per second
-## 146                                                                         meters per day
-## 147                                                                           feet per day
-## 148                                                                        feet per second
-## 149                                                                          feet per hour
-## 150                                                                       yards per second
-## 151                                                                         miles per hour
-## 152                                                                       miles per second
-## 153                                                                       miles per minute
-## 154                                                                 centimeters per second
-## 155                                                                 millimeters per second
-## 156                                                                    centimeter Per Year
-## 157                                                                                  knots
-## 158                                                                                  km/hr
-## 159                                                              meters per second squared
-## 160                                                                               1/meters
-## 161                                                              cubic meters per kilogram
-## 162                                                             cubic micrometers per gram
-## 163                                                               ampere per meter squared
-## 164                                                                       ampere per meter
-## 165                                                                   mole per cubic meter
-## 166                                                                 molarity = moles/liter
-## 167                                                                    molality = moles/kg
-## 168                                                               candela Per Square Meter
-## 169                                                              meters squared per second
-## 170                                                                 meters squared per day
-## 171                                                                   feet squared per day
-## 172                                                  kilograms per meter sqared per second
-## 173                                                grams Per Centimeter Squared Per Second
-## 174                                                       grams Per Meter Squared Per Year
-## 175                                                      grams Per Hectare Squared Per Day
-## 176                                                         kilograms Per Hectare Per Year
-## 177                                                   kilograms Per Meter Squared Per Year
-## 178                                                                     moles per kilogram
-## 179                                                                         moles per gram
-## 180                                                                    millimoles per gram
-## 181                                                          moles per kilogram per second
-## 182                                                          nanomoles Per Gram Per Second
-## 183                                                                   kilograms per second
-## 184                                                                        tonnes Per Year
-## 185                                                                         grams Per Year
-## 186                                                               number per meter squared
-## 187                                                           number per kilometer squared
-## 188                                                                 number per meter cubed
-## 189                                                           number of entities per liter
-## 190                                                      number of entities per milliliter
-## 191                                                                        meters per gram
-## 192                                                            number of entities per gram
-## 193                                                                         grams per gram
-## 194                                                                    micrograms per gram
-## 195                                                 cubic centimeters per cubic centimeter</code></pre>
-<p>Use <code>View(standardUnits$units)</code> for a prettier display locally.</p>
-<p>The <code>get_unitList()</code> function returns two tables, <code>units</code> and <code>unitType</code>. We will see the importance of the latter in a moment. This table can be useful in identifying the appropriate unit <code>id</code> to use when creating an EML file using <code>set_attributes()</code>.</p>
-<p>For now, we would like to learn more about the custom unit that <em>isn’t</em> in the standard dictionary. A valid EML file must provide the definitions for any custom unit in the <code>addtionalMetadata</code> section. We can use <code>get_unitList()</code> to extract this information from the EML document:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">customUnits &lt;-<span class="st"> </span><span class="kw">get_unitList</span>(eml@additionalMetadata[[<span class="dv">1</span>]]@metadata)
-customUnits</code></pre></div>
-<pre><code>## $units
-##                      id                  name         unitType
-## 1   gramsPerSquareMeter   gramsPerSquareMeter arealMassDensity
-## 2 speciesPerSquareMeter speciesPerSquareMeter     arealDensity
-##                  parentSI multiplierToSI constantToSI abbreviation
-## 1 kilogramsPerSquareMeter           .001         &lt;NA&gt;         &lt;NA&gt;
-## 2    numberPerSquareMeter              1         &lt;NA&gt;         &lt;NA&gt;
-##                                        description
-## 1 a description of the unit Grams per Square Meter
-## 2                                             &lt;NA&gt;
-## 
-## $unitTypes
-## NULL</code></pre>
-<p>We see that this EML file defines two custom units (though as we’ve seen <code>gramsPerSquareMeter</code> is actually in the standard unit list now, so that one isn’t needed.) We also see that the <code>unitTypes</code> table is empty, since the custom unit <code>speciesPerSquareMeter</code> uses the standard <code>unitType</code> <code>arealDensity</code>, which we can look up in the standards table:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">which</span>(standardUnits$unitTypes$id ==<span class="st"> &quot;arealDensity&quot;</span>)</code></pre></div>
-<pre><code>## [1] 55 56</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">standardUnits$unitTypes[<span class="kw">c</span>(<span class="dv">55</span>,<span class="dv">56</span>),]</code></pre></div>
-<pre><code>##              id         name     dimension power
-## 55 arealDensity arealDensity dimensionless  &lt;NA&gt;
-## 56 arealDensity arealDensity        length    -2</code></pre>
-<p>Which tells us that an <code>arealDensity</code> is a dimensionless unit times a length to <code>-2</code> power.</p>
-</div>
-<div id="writing-eml-declaring-unit-types-and-custom-units" class="section level2">
-<h2>Writing EML: Declaring unit types and custom units</h2>
-<p>When writing our own EML files, we must thus take care to define our units.</p>
-<p>For tabular data (e.g. csv files), this information is provided in the <code>attributeList</code> element, such as we created using the <code>set_attributes()</code> function in the vignette, “creating EML”. When working with any numeric data, this function takes a <code>data.frame</code> with a column for <code>unit</code> that provides the name of the unit listed.</p>
-<p>These units cannot be any free-form text, but should instead be one of the standard units recognized by EML. Since EML knows about lots of units already, this usually just means making sure we use the correct <code>id</code> for the desired unit in the attributes metadata. As we have seen above, the <code>standardUnits</code> list can help us with this. We can just skim the table by eye, or, for instance, we can look up the unit <code>id</code> for a some units by abbreviation:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">i &lt;-<span class="st"> </span><span class="kw">which</span>(standardUnits$units$abbr ==<span class="st"> &quot;btu&quot;</span>)
-j &lt;-<span class="st"> </span><span class="kw">which</span>(standardUnits$units$abbr ==<span class="st"> &quot;μm³/kg&quot;</span>)
-standardUnits$units[<span class="kw">c</span>(i,j),]</code></pre></div>
-<pre><code>##                          id                    name       unitType
-## 84       britishThermalUnit      britishThermalUnit         energy
-## 162 cubicMicrometersPerGram cubicMicrometersPerGram specificVolume
-##                  parentSI    multiplierToSI constantToSI abbreviation
-## 84                  joule         1055.0559         &lt;NA&gt;          btu
-## 162 cubicMeterPerKilogram 0.000000000000001         &lt;NA&gt;       μm³/kg
-##                    description
-## 84         1 btu = 1055.0559 J
-## 162 cubic micrometers per gram</code></pre>
-<p>note that EML names units in camelCase, with compound units spelled out. We will need to give the full unit <code>id</code>, not the abbreviation, to the units column when defining attribute metadata, e.g.:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">attributeName =</span> <span class="st">&quot;energy&quot;</span>, 
-                   <span class="dt">attributeDefinition =</span> <span class="st">&quot;energy absorbed by the surface&quot;</span>, 
-                   <span class="dt">unit =</span> <span class="st">&quot;britishThermalUnit&quot;</span>, 
-                   <span class="dt">numberType =</span> <span class="st">&quot;real&quot;</span>,
-                   <span class="dt">stringsAsFactors =</span> <span class="ot">FALSE</span>)
-  attributeList &lt;-<span class="st"> </span><span class="kw">set_attributes</span>(df, <span class="dt">col_classes =</span> <span class="st">&quot;numeric&quot;</span>)</code></pre></div>
-<p>Sometimes we will want to use a unit that is not avaialble in the <code>standardUnit</code> list, such as the example of species per square meter seen above. To add this information to our EML file, we use <code>set_unitList</code>, using definitions that follow the same <code>data.frame</code> format we saw returned by the <code>get_unitList()</code> function. Here we provide the definition for species per square meter, following the camelCase convention of EML</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">custom_units &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">id =</span> <span class="st">&quot;speciesPerSquareMeter&quot;</span>, <span class="dt">unitType =</span> <span class="st">&quot;arealDensity&quot;</span>, <span class="dt">parentSI =</span> <span class="st">&quot;numberPerSquareMeter&quot;</span>, <span class="dt">multiplierToSI =</span> <span class="dv">1</span>, <span class="dt">description =</span> <span class="st">&quot;number of species per square meter&quot;</span>)
-<span class="kw">set_unitList</span>(custom_units)</code></pre></div>
-<pre><code>## &lt;unitList&gt;
-##   &lt;unit id=&quot;speciesPerSquareMeter&quot; name=&quot;speciesPerSquareMeter&quot; parentSI=&quot;numberPerSquareMeter&quot; unitType=&quot;arealDensity&quot; multiplierToSI=&quot;1&quot;&gt;
-##     &lt;description&gt;number of species per square meter&lt;/description&gt;
-##   &lt;/unit&gt;
-## &lt;/unitList&gt;</code></pre>
-<p>Note that this definition refers to the <code>unitType</code> <code>arealDensity</code>, which, as we have already seen, is defined in the standard unit types. Users should consult the <code>standardUnits$unitType</code> table for the names and defintitions of standard types, e.g.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">unique</span>(standardUnits$unitTypes$id)</code></pre></div>
-<pre><code>##  [1] &quot;length&quot;                         &quot;time&quot;                          
-##  [3] &quot;mass&quot;                           &quot;current&quot;                       
-##  [5] &quot;temperature&quot;                    &quot;amount&quot;                        
-##  [7] &quot;luminosity&quot;                     &quot;dimensionless&quot;                 
-##  [9] &quot;angle&quot;                          &quot;acceleration&quot;                  
-## [11] &quot;charge&quot;                         &quot;magneticFieldStrength&quot;         
-## [13] &quot;currentDensity&quot;                 &quot;area&quot;                          
-## [15] &quot;lengthReciprocal&quot;               &quot;frequency&quot;                     
-## [17] &quot;volume&quot;                         &quot;volumetricArea&quot;                
-## [19] &quot;speed&quot;                          &quot;massDensity&quot;                   
-## [21] &quot;massPerMass&quot;                    &quot;volumePerVolume&quot;               
-## [23] &quot;volumetricRate&quot;                 &quot;volumetricMassDensityRate&quot;     
-## [25] &quot;arealMassDensityRate&quot;           &quot;specificVolume&quot;                
-## [27] &quot;amountOfSubstanceConcentration&quot; &quot;amountOfSubstanceWeight&quot;       
-## [29] &quot;amountOfSubstanceWeightFlux&quot;    &quot;massFlux&quot;                      
-## [31] &quot;luminance&quot;                      &quot;volumetricDensity&quot;             
-## [33] &quot;arealDensity&quot;                   &quot;arealMassDensity&quot;              
-## [35] &quot;specificArea&quot;                   &quot;force&quot;                         
-## [37] &quot;energy&quot;                         &quot;power&quot;                         
-## [39] &quot;potentialDifference&quot;            &quot;capacitance&quot;                   
-## [41] &quot;resistance&quot;                     &quot;resistivity&quot;                   
-## [43] &quot;conductance&quot;                    &quot;magneticFlux&quot;                  
-## [45] &quot;magneticFluxDensity&quot;            &quot;inductance&quot;                    
-## [47] &quot;illuminance&quot;                    &quot;radionucleotideActivity&quot;       
-## [49] &quot;specificEnergy&quot;                 &quot;doseEquivalent&quot;                
-## [51] &quot;catalyticActivity&quot;              &quot;pressure&quot;                      
-## [53] &quot;transmissivity&quot;                 &quot;massSpecificLength&quot;            
-## [55] &quot;massSpecificCount&quot;</code></pre>
-<p>Likewise, <code>parentSI</code> should refer to a unit already defined in the standard unit dictionary, or otherwise provided by similar custom definition. A <code>multiplierToSI</code> should be provided. If necessary an additive <code>constantToSI</code> can also be provided. An abbreviation and description of the unit is optional.</p>
-<p>In even rarer cases, a <code>unitType</code> might not be available in the standard unit list. It is possible to convert between different <code>units</code> that share a common <code>unitType</code> such as <code>length</code>, but not units with different <code>unitTypes</code>. This may be particularly applicable for compound units: for instance, there is no unit type with dimensions of length per time cubed, (equivalently, acceleration per time, also known as a “jerk”). We can define a custom unit type by providing the appropriate data frame, with one row for each base type. Note we have to repeat the <code>id</code> for each row that is shared by the unit. The unit definition follows from the product of the each of the base dimensions raised to the power given (a missing value for power is equivalent to a power of 1), e.g. for our jerk:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">unitType &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">id =</span> <span class="kw">c</span>(<span class="st">&quot;jerk&quot;</span>, <span class="st">&quot;jerk&quot;</span>), <span class="dt">dimension =</span> <span class="kw">c</span>(<span class="st">&quot;length&quot;</span>, <span class="st">&quot;time&quot;</span>), <span class="dt">power =</span> <span class="kw">c</span>(<span class="dv">1</span>, -<span class="dv">3</span>) )</code></pre></div>
-<p>Of course we cannot use a <code>unitType</code> without a unit to measure it in, so we define the SI <code>unit</code> as well (note we do not need a <code>parentSI</code> or multiplier because this is already an SI unit):</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">unit &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">id =</span> <span class="st">&quot;meterPerSecondCubed&quot;</span>, <span class="dt">unitType =</span> <span class="st">&quot;jerk&quot;</span>)</code></pre></div>
-<p>We can now generate the required <code>unitList</code>:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">unitList &lt;-<span class="st"> </span><span class="kw">set_unitList</span>(unit, unitType)</code></pre></div>
-<p>Note that there are often many equivalent ways to express a unit (our jerk could have been acceleration per time instead). Before defining a new unitType, some dilegence may help you recognize a unitType that has already been defined in a different way.</p>
-</div>
-<div id="adding-the-unitlist-to-the-eml-document" class="section level2">
-<h2>Adding the unitList to the EML document</h2>
-<p>As we have seen above, the custom unit declearations must be found in the <code>additionalMetadata</code> section of an EML file. To do so, we can simply coerce the <code>unitList</code> into an additionalMetadata element when creating our <code>eml</code> object:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">eml &lt;-<span class="st"> </span><span class="kw">new</span>(<span class="st">&quot;eml&quot;</span>, <span class="dt">additionalMetadata =</span> <span class="kw">as</span>(unitList, <span class="st">&quot;additionalMetadata&quot;</span>))</code></pre></div>
-<!--
-
-------------
-
-
-
-In principle the EML declaration includes all information necessary to define functions for converting beween different units of a common `unitType`.  
-
-`udunits2` package
-
-
-```r
-library("udunits2")
-```
-
--->
 </div>
 
 

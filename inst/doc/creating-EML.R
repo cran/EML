@@ -1,68 +1,22 @@
 ## ----include=FALSE-------------------------------------------------------
-has_pandoc <- rmarkdown::pandoc_available()
+has_pandoc <-  rmarkdown::pandoc_available()
 
 ## ------------------------------------------------------------------------
-library("EML")
+library(EML)
+library(emld)
 
 ## ------------------------------------------------------------------------
 attributes <-
-data.frame(
-  attributeName = c(
-  "run.num",
-  "year",
-  "day",
-  "hour.min",
-  "i.flag",
-  "variable",
-  "value.i",
-  "length"), 
-  attributeDefinition = c(
-    "which run number (=block). Range: 1 - 6. (integer)",
-    "year, 2012",
-    "Julian day. Range: 170 - 209.",
-    "hour and minute of observation. Range 1 - 2400 (integer)",
-    "is variable Real, Interpolated or Bad (character/factor)",
-    "what variable being measured in what treatment (character/factor).",
-    "value of measured variable for run.num on year/day/hour.min.",
-    "length of the species in meters (dummy example of numeric data)"),
-  formatString = c(
-    NA,        
-    "YYYY",     
-    "DDD",      
-    "hhmm",     
-    NA,         
-    NA,         
-    NA,
-    NA),
-   definition = c(        
-    "which run number",
-    NA,
-    NA,
-    NA,
-    NA,
-    NA, 
-    NA,
-    NA),
-  unit = c(
-    NA,
-    NA,
-    NA,
-    NA,
-    NA,
-    NA,
-    NA,
-    "meter"),
-  numberType = c(
-    NA,
-    NA,
-    NA,
-    NA,
-    NA,
-    NA,
-    NA,
-    "real"),
-  stringsAsFactors = FALSE
-)
+tibble::tribble(
+~attributeName, ~attributeDefinition,                                                 ~formatString, ~definition,        ~unit,   ~numberType,
+  "run.num",    "which run number (=block). Range: 1 - 6. (integer)",                 NA,            "which run number", NA,       NA,
+  "year",       "year, 2012",                                                         "YYYY",        NA,                 NA,       NA,
+  "day",        "Julian day. Range: 170 - 209.",                                      "DDD",         NA,                 NA,       NA,
+  "hour.min",   "hour and minute of observation. Range 1 - 2400 (integer)",           "hhmm",        NA,                 NA,       NA,
+  "i.flag",     "is variable Real, Interpolated or Bad (character/factor)",           NA,            NA,                 NA,       NA,
+  "variable",   "what variable being measured in what treatment (character/factor).", NA,            NA,                 NA,       NA,
+  "value.i",    "value of measured variable for run.num on year/day/hour.min.",       NA,            NA,                 NA,       NA,
+  "length",    "length of the species in meters (dummy example of numeric data)",     NA,            NA,                 "meter",  "real")
 
 
 ## ------------------------------------------------------------------------
@@ -117,22 +71,14 @@ attributeList <- set_attributes(attributes, factors, col_classes = c("character"
 physical <- set_physical("hf205-01-TPexp1.csv")
 
 ## ------------------------------------------------------------------------
-dataTable <- new("dataTable",
+dataTable <- list(
                  entityName = "hf205-01-TPexp1.csv",
                  entityDescription = "tipping point experiment 1",
                  physical = physical,
                  attributeList = attributeList)
 
 ## ------------------------------------------------------------------------
-getSlots("dataTable")
-
-## ------------------------------------------------------------------------
-example <- new("dataTable")
-#example@physical <- physical # Error -- wrong type.
-example@physical <- c(physical) # concat method promotes 1 or more arguments to a ListOf 
-
-## ------------------------------------------------------------------------
-geographicDescription <- "The Geographic region of the kelp bed data extends along the California coast, down through the coast of Baja, Mexico: Central California (Halfmoon Bay to Purisima Point), Southern California (Point Arguello to the United States/Mexico border including the Channel Islands) and Baja California (points south of the United States/Mexico border including several offshore islands)"
+geographicDescription <- "Harvard Forest Greenhouse, Tom Swamp Tract (Harvard Forest)"
 
 
 coverage <- 
@@ -144,27 +90,27 @@ coverage <-
                altitudeMin = 160, altitudeMaximum = 330,
                altitudeUnits = "meter")
 
-## ------------------------------------------------------------------------
-coverage
-
 ## ----eval=has_pandoc-----------------------------------------------------
 methods_file <- system.file("examples/hf205-methods.docx", package = "EML")
 methods <- set_methods(methods_file)
 
 ## ----include=FALSE, eval=!has_pandoc-------------------------------------
 #  ## placeholder if pandoc is not installed
-#  methods <- new("methods")
+#  methods <- NULL
 
 ## ------------------------------------------------------------------------
-R_person <- as.person("Aaron Ellison <fakeaddress@email.com> [cre]")
-aaron <-as(R_person, "creator")
+R_person <- person("Aaron", "Ellison", ,"fakeaddress@email.com", "cre", 
+                  c(ORCID = "0000-0003-4151-6081"))
+aaron <- as_emld(R_person)
 
 ## ------------------------------------------------------------------------
-others <- c(as.person("Benjamin Baiser [ctb]"), as.person("Jennifer Sirota [ctb]"))
-associatedParty <- as(others, "associatedParty")
+others <- c(as.person("Benjamin Baiser"), as.person("Jennifer Sirota"))
+associatedParty <- as_emld(others)
+associatedParty[[1]]$role <- "Researcher"
+associatedParty[[2]]$role <- "Researcher"
 
 ## ------------------------------------------------------------------------
-HF_address <- new("address",
+HF_address <- list(
                   deliveryPoint = "324 North Main Street",
                   city = "Petersham",
                   administrativeArea = "MA",
@@ -172,34 +118,37 @@ HF_address <- new("address",
                   country = "USA")
 
 ## ------------------------------------------------------------------------
-publisher <- new("publisher",
+publisher <- list(
                  organizationName = "Harvard Forest",
                  address = HF_address)
 
 ## ------------------------------------------------------------------------
 contact <- 
-  new("contact",
-    individualName = aaron@individualName,
-    electronicMail = aaron@electronicMailAddress,
+  list(
+    individualName = aaron$individualName,
+    electronicMailAddress = aaron$electronicMailAddress,
     address = HF_address,
     organizationName = "Harvard Forest",
     phone = "000-000-0000")
 
 
 ## ------------------------------------------------------------------------
-keywordSet <-
-  c(new("keywordSet",
+keywordSet <- list(
+    list(
         keywordThesaurus = "LTER controlled vocabulary",
-        keyword = c("bacteria",
+        keyword = list("bacteria",
                     "carnivorous plants",
                     "genetics",
-                    "thresholds")),
-    new("keywordSet",
+                    "thresholds")
+        ),
+    list(
         keywordThesaurus = "LTER core area",
-        keyword =  c("populations", "inorganic nutrients", "disturbance")),
-    new("keywordSet",
+        keyword =  list("populations", "inorganic nutrients", "disturbance")
+        ),
+    list(
         keywordThesaurus = "HFR default",
-        keyword = c("Harvard Forest", "HFR", "LTER", "USA")))
+        keyword = list("Harvard Forest", "HFR", "LTER", "USA")
+        ))
 
 ## ------------------------------------------------------------------------
 pubDate <- "2012" 
@@ -233,10 +182,10 @@ see: http://www.lternet.edu/data/netpolicy.html."
 
 ## ----eval=has_pandoc-----------------------------------------------------
 abstract_file <-  system.file("examples/hf205-abstract.md", package = "EML")
-abstract <- as(set_TextType(abstract_file), "abstract")
+abstract <- set_TextType(abstract_file)
 
 ## ------------------------------------------------------------------------
-dataset <- new("dataset",
+dataset <- list(
                title = title,
                creator = aaron,
                pubDate = pubDate,
@@ -250,8 +199,8 @@ dataset <- new("dataset",
                dataTable = dataTable)
 
 ## ------------------------------------------------------------------------
-eml <- new("eml",
-           packageId = "f0cda3bf-2619-425e-b8be-8deb6bc6094d",  # from uuid::UUIDgenerate(),
+eml <- list(
+           packageId = uuid::UUIDgenerate(),
            system = "uuid", # type of identifier
            dataset = dataset)
 
@@ -262,6 +211,6 @@ write_eml(eml, "eml.xml")
 ## ------------------------------------------------------------------------
 eml_validate("eml.xml")
 
-## ----eval=FALSE----------------------------------------------------------
-#  write_eml(eml, "example.xml")
+## ----include=FALSE-------------------------------------------------------
+unlink("eml.xml")
 

@@ -3,7 +3,7 @@
 #' @param beginDate Starting date for temporal coverage range.
 #' @param endDate End date for temporal coverage range
 #' @param date give a single date, or vector of single dates covered (instead of beginDate and endDate)
-#' @param sci_names string (space seperated) or list or data frame of scientific names for species covered.  See details
+#' @param sci_names string (space separated) or list or data frame of scientific names for species covered.  See details
 #' @param geographicDescription text string describing the geographic location
 #' @param westBoundingCoordinate Decimal longitude for west edge bounding box
 #' @param eastBoundingCoordinate Decimal longitude for east edge bounding box
@@ -28,42 +28,43 @@
 #' @export
 #'
 #' @examples
-#'coverage <-
-#'  set_coverage(begin = '2012-06-01', end = '2013-12-31',
-#'               sci_names = "Sarracenia purpurea",
-#'               geographicDescription = "California coast, down through Baja, Mexico",
-#'               west = -122.44, east = -117.15,
-#'               north = 37.38, south = 30.00)
-#'
-
+#' coverage <-
+#'   set_coverage(
+#'     begin = "2012-06-01", end = "2013-12-31",
+#'     sci_names = "Sarracenia purpurea",
+#'     geographicDescription = "California coast, down through Baja, Mexico",
+#'     west = -122.44, east = -117.15,
+#'     north = 37.38, south = 30.00
+#'   )
 set_coverage <-
   function(beginDate = character(),
-           endDate = character(),
-           date = character(),
-           sci_names = character(),
-           geographicDescription = character(),
-           westBoundingCoordinate = numeric(),
-           eastBoundingCoordinate = numeric(),
-           northBoundingCoordinate = numeric(),
-           southBoundingCoordinate = numeric(),
-           altitudeMinimum = numeric(),
-           altitudeMaximum = numeric(),
-           altitudeUnits = character()) {
-    new(
-      "coverage",
-      geographicCoverage = set_geographicCoverage(
-        geographicDescription,
-        westBoundingCoordinate,
-        eastBoundingCoordinate,
-        northBoundingCoordinate,
-        southBoundingCoordinate,
-        altitudeMinimum,
-        altitudeMaximum,
-        altitudeUnits
-      ),
-      temporalCoverage = set_temporalCoverage(beginDate, endDate, date),
-      taxonomicCoverage = set_taxonomicCoverage(sci_names)
-    )
+             endDate = character(),
+             date = character(),
+             sci_names = character(),
+             geographicDescription = character(),
+             westBoundingCoordinate = numeric(),
+             eastBoundingCoordinate = numeric(),
+             northBoundingCoordinate = numeric(),
+             southBoundingCoordinate = numeric(),
+             altitudeMinimum = numeric(),
+             altitudeMaximum = numeric(),
+             altitudeUnits = character()) {
+    out <-
+      list(
+        geographicCoverage = set_geographicCoverage(
+          geographicDescription,
+          westBoundingCoordinate,
+          eastBoundingCoordinate,
+          northBoundingCoordinate,
+          southBoundingCoordinate,
+          altitudeMinimum,
+          altitudeMaximum,
+          altitudeUnits
+        ),
+        temporalCoverage = set_temporalCoverage(beginDate, endDate, date),
+        taxonomicCoverage = set_taxonomicCoverage(sci_names)
+      )
+    as_emld(out)
   }
 
 
@@ -73,27 +74,24 @@ set_coverage <-
 ## Fixme just rewrite constructor?
 set_geographicCoverage <-
   function(geographicDescription = character(),
-           westBoundingCoordinate = numeric(),
-           eastBoundingCoordinate = numeric(),
-           northBoundingCoordinate = numeric(),
-           southBoundingCoordinate = numeric(),
-           altitudeMinimum = numeric(),
-           altitudeMaximum = numeric(),
-           altitudeUnits = character()) {
+             westBoundingCoordinate = numeric(),
+             eastBoundingCoordinate = numeric(),
+             northBoundingCoordinate = numeric(),
+             southBoundingCoordinate = numeric(),
+             altitudeMinimum = numeric(),
+             altitudeMaximum = numeric(),
+             altitudeUnits = character()) {
     ## Should permit G-Polygon definitions
-    new(
-      "geographicCoverage",
+    list(
       geographicDescription = geographicDescription,
-      boundingCoordinates = new(
-        "boundingCoordinates",
-        westBoundingCoordinate = as.character(westBoundingCoordinate),
-        eastBoundingCoordinate = as.character(eastBoundingCoordinate),
-        northBoundingCoordinate = as.character(northBoundingCoordinate),
-        southBoundingCoordinate = as.character(southBoundingCoordinate),
-        boundingAltitudes = new(
-          "boundingAltitudes",
-          altitudeMinimum = as.character(altitudeMinimum),
-          altitudeMaximum = as.character(altitudeMaximum),
+      boundingCoordinates = list(
+        westBoundingCoordinate = westBoundingCoordinate,
+        eastBoundingCoordinate = eastBoundingCoordinate,
+        northBoundingCoordinate = northBoundingCoordinate,
+        southBoundingCoordinate = southBoundingCoordinate,
+        boundingAltitudes = list(
+          altitudeMinimum = altitudeMinimum,
+          altitudeMaximum = altitudeMaximum,
           altitudeUnits = altitudeUnits
         )
       )
@@ -108,34 +106,26 @@ set_geographicCoverage <-
 ## FIXME if given dateTime objects, should coerce appropriately to include 'time' element
 set_temporalCoverage <-
   function(beginDate = character(),
-           endDate  = character(),
-           date  = character()) {
+             endDate = character(),
+             date = character()) {
     if (length(beginDate) > 0) {
-      node <- new(
-        "temporalCoverage",
-        rangeOfDates =
-          new(
-            "rangeOfDates",
-            beginDate =
-              new("beginDate",
-                  calendarDate = beginDate),
-            endDate =
-              new("endDate",
-                  calendarDate = endDate)
-          )
+      list(
+        rangeOfDates = list(
+          beginDate = list(calendarDate = beginDate),
+          endDate = list(calendarDate = endDate)
+        )
       )
     } else if (length(date) > 0) {
-      node <- new("temporalCoverage",
-                  singleDateTime = lapply(date, function(x)
-                    new("singleDateTime", calendarDate = x)))
+      list(singleDateTime = lapply(date, function(x) list(calendarDate = x)))
     }
-    node
   }
 
 ######## Taxonomic Coverage ####################
 #' set_taxonomicCoverage
 #'
-#' @param sci_names string (space seperated) or list or data frame of scientific names for species covered.
+#' @param sci_names string (space separated) or list or data frame of scientific names for species covered.
+#' @param expand Set to TRUE to use taxize to expand sci_names into full taxonomic classifications
+#' @param db The taxonomic database to query (when expand is set to \code{TRUE}). See \code{\link[taxize]{classification}} for valid options. Defaults to 'itis'.
 #' @details Turn a data.frame or a list of scientific names into a taxonomicCoverage block
 #' sci_names can be a space-separated character string or a data frame with column names as rank name
 #' or a list of user-defined taxonomicClassification
@@ -145,92 +135,155 @@ set_temporalCoverage <-
 #' For user-defined "sci_names", users must make sure that the order of rank names
 #' they specify is from high to low.
 #' Ex. "Kingdom","Phylum","Class","Order","Family","Genus","Species","Common"
+#' EML permits any rank names provided they go in descending order.
 #'
 #' @export
-#'
+#' @importFrom methods is
 #' @examples
-#' taxon_coverage <-
-#'  set_taxonomicCoverage(list(KINGDOM="Plantae",
-#'                             PHYLUM="Phaeophyta",
-#'                             CLASS="Phaeophyceae",
-#'                             ORDER="Laminariales",
-#'                             FAMILY="Lessoniaceae",
-#'                             GENUS="Macrocystis",
-#'                             genusSpecies="Macrocystis pyrifera",
-#'                             commonName="MAPY"))
 #'
-#' df <- data.frame(KINGDOM="Plantae",
-#'                  PHYLUM="Phaeophyta",
-#'                  CLASS="Phaeophyceae",
-#'                  ORDER="Laminariales",
-#'                  FAMILY="Lessoniaceae",
-#'                  GENUS="Macrocystis",
-#'                  genusSpecies="Macrocystis pyrifera",
-#'                  commonName="MAPY")
-#' taxon_coverage <- set_taxonomicCoverage(df)
+#' sci_names <- data.frame(
+#'   Kingdom = "Plantae",
+#'   Phylum = "Phaeophyta",
+#'   Class = "Phaeophyceae",
+#'   Order = "Laminariales",
+#'   Family = "Lessoniaceae",
+#'   Genus = "Macrocystis",
+#'   Species = "pyrifera"
+#' )
+#' taxon_coverage <- set_taxonomicCoverage(sci_names)
 #'
-
-set_taxonomicCoverage <- function(sci_names) {
-  if (class(sci_names) == "character") {
-    taxa <- lapply(sci_names, function(sci_name) {
-      s <- strsplit(sci_name, " ")[[1]]
-      new(
-        "taxonomicClassification",
-        taxonRankName = "genus",
+#' \donttest{ # Examples that may take > 5s
+#'
+#' # Query ITIS using taxize to fill in the full taxonomy given just species
+#' #  # names
+#' taxon_coverage <- set_taxonomicCoverage(
+#'   c("Macrocystis pyrifera", "Homo sapiens"),
+#'   expand = TRUE
+#' )
+#'
+#' # Query GBIF instead of ITIS
+#' taxon_coverage <- set_taxonomicCoverage(
+#'   c("Macrocystis pyrifera"),
+#'   expand = TRUE,
+#'   db = "gbif"
+#' )
+#'
+#' ## use a list of lists for multiple species
+#' sci_names <- list(list(
+#'   Kindom = "Plantae",
+#'   Phylum = "Phaeophyta",
+#'   Class = "Phaeophyceae",
+#'   Order = "Laminariales",
+#'   Family = "Lessoniaceae",
+#'   Genus = "Macrocystis",
+#'   Species = "pyrifera"
+#' ))
+#' set_taxonomicCoverage(sci_names)
+#'
+#' }
+set_taxonomicCoverage <- function(sci_names, expand = FALSE, db = "itis") {
+  # Expand using taxize and ITIS if the user passes in just scientific names
+  if (is.character(sci_names) && expand) {
+    sci_names <- expand_scinames(sci_names, db)
+  }
+  if (is.character(sci_names) && !expand) {
+    taxa <- lapply(strsplit(sci_names, " "), function(s) {
+      list(
+        taxonRankName = "Genus",
         taxonRankValue = s[[1]],
-        taxonomicClassification = c(
-          new(
-            "taxonomicClassification",
-            taxonRankName = "species",
-            taxonRankValue = s[[2]]
-          )
+        taxonomicClassification = list(
+          taxonRankName = "Species",
+          taxonRankValue = s[[2]]
         )
       )
     })
-    new("taxonomicCoverage",
-        taxonomicClassification = do.call(c, taxa))
-  } else if (class(sci_names) == "data.frame") {
-    taxon_classification <- colnames(sci_names)
-    new <- as.data.frame(t(sci_names))
-    colnames(new) <- NULL
-    taxa <- lapply(new, function(sci_name) {
-      tc <- lapply(taxon_classification, function(name) {
-        new(
-          "taxonomicClassification",
-          taxonRankName = name,
-          taxonRankValue = as.character(sci_name[name])
-        )
-      })
-      tc <- formRecursiveTree(tc)[[1]]
-    })
-    new("taxonomicCoverage",
-        taxonomicClassification = do.call(c, taxa))
-  } else if (class(sci_names) == "list") {
-    taxonRankNames <- as.list(names(sci_names))
-    taxa <- lapply(taxonRankNames, function(name) {
-      new(
-        "taxonomicClassification",
-        taxonRankName = as.character(name),
-        taxonRankValue = as.character(sci_names[[name]])
-      )
-    })
-    taxa <- formRecursiveTree(taxa)
-    new("taxonomicCoverage",
-        taxonomicClassification = do.call(c, taxa))
+    list(taxonomicClassification = taxa)
+  } else if (is.data.frame(sci_names)) {
+    set_taxonomicCoverage.data.frame(sci_names)
+  } else if (is.list(sci_names)) {
+    set_taxonomicCoverage.list(sci_names)
   } else {
-    stop("Incorrect format: sci_names can only be character string, data.frame or list")
+    stop("Incorrect format: sci_names
+can only be character string, data.frame or list")
   }
 }
 
-# helper function: form a nested tree recursively
-formRecursiveTree <- function(listOfelements) {
-  if (length(listOfelements) == 1 ||
-      length(listOfelements) == 2 && is.null(listOfelements[[2]])) {
-    return(do.call(c, listOfelements[1]))
-  } else if (is.null(listOfelements[[1]])) {
-    formRecursiveTree(listOfelements[2:length(listOfelements)])
+
+
+## Recursively turn named list into nested list
+pop <- function(taxa) {
+  if (length(taxa) > 1) {
+    list(
+      taxonRankName = names(taxa)[1],
+      taxonRankValue = taxa[[1]],
+      taxonomicClassification = pop(taxa[-1])
+    )
   } else {
-    listOfelements[[1]]@taxonomicClassification <- formRecursiveTree(listOfelements[2:length(listOfelements)])
-    return(do.call(c, listOfelements[1]))
+    list(
+      taxonRankName = names(taxa)[1],
+      taxonRankValue = taxa[[1]]
+    )
   }
+}
+
+#' @importFrom stats setNames
+set_taxonomicCoverage.data.frame <- function(sci_names) {
+  ranks <- colnames(sci_names)
+  values <- as.data.frame(t(sci_names), stringsAsFactors = FALSE)
+  colnames(values) <- NULL
+
+  taxa <- lapply(values, function(v) {
+    pop(setNames(v, ranks))
+  })
+  list(taxonomicClassification = taxa)
+}
+
+set_taxonomicCoverage.list <- function(sci_names) {
+  taxa <- lapply(sci_names, function(sci_name) {
+    pop(sci_name)
+  })
+  list(taxonomicClassification = taxa)
+}
+
+
+
+
+expand_scinames <- function(sci_names, db) {
+  if (!requireNamespace("taxize", quietly = TRUE)) {
+    stop(
+      call. = FALSE,
+      "Expansion of scientific names requires the
+'taxize' package to be installed. Install taxize or set expand to FALSE."
+    )
+  }
+  classifications <- taxize::classification(sci_names, db = db)
+  # Remove any NAs and warn for each
+  if (any(is.na(classifications))) {
+    warning(
+      call. = FALSE,
+      paste0(
+        "Some scientific names were not found in the
+taxonomic database and were not expanded: ",
+        paste0(sci_names[which(is.na(classifications))],
+          collapse = ","
+        ), "."
+      )
+    )
+  }
+  # Turn result into a list of named lists where names are the rank name and
+  # values are the rank value
+  sci_names <- mapply(function(cls, sci_name) {
+    # If the species name isn't found in the database, NA is returned
+    if (is.list(cls)) {
+      x <- as.list(cls[["name"]])
+      names(x) <- cls[["rank"]]
+      x
+    } else {
+      x <- list(list("species" = as.character(sci_name)))
+      names(x) <- sci_name
+      x
+    }
+  }, classifications, names(classifications), SIMPLIFY = FALSE)
+
+  sci_names
 }

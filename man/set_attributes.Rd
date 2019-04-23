@@ -4,11 +4,11 @@
 \alias{set_attributes}
 \title{set_attributes}
 \usage{
-set_attributes(attributes, factors = NULL, col_classes = NULL)
+set_attributes(attributes, factors = NULL, col_classes = NULL,
+  missingValues = NULL)
 }
 \arguments{
-\item{attributes}{a joined table of all attribute metadata
-(such as returned by \code{\link{get_attributes}}, see details)}
+\item{attributes}{a joined table of all attribute metadata}
 
 \item{factors}{a table with factor code-definition pairs; see details}
 
@@ -16,6 +16,8 @@ set_attributes(attributes, factors = NULL, col_classes = NULL)
 will let the function infer missing 'domain' and 'measurementScale' values for attributes column.
 Should be in same order as attributeNames in the attributes table, or be a named list with names corresponding to attributeNames
 in the attributes table.}
+
+\item{missingValues}{optional, a table with missing value code-deinition pairs; see details}
 }
 \value{
 an eml "attributeList" object
@@ -30,9 +32,12 @@ These are:
 
 For all data:
 - attributeName (required, free text field)
+
 - attributeDefinition (required, free text field)
+
 - measurementScale (required, "nominal", "ordinal", "ratio", "interval", or "dateTime",
  case sensitive) but it can be inferred from col_classes.
+ 
 - domain (required, "numericDomain", "textDomain", "enumeratedDomain", or "dateTimeDomain",
  case sensitive) but it can be inferred from col_classes.
 
@@ -45,5 +50,22 @@ For character (textDomain) data:
 For dateTime data:
 - formatString (required)
 
-For factor data:
+Other optional allowed columns in the attributes table are:
+source, pattern, precision, numberType, missingValueCode, missingValueCodeExplanation,
+attributeLabel, storageType, minimum, maximum
+
+The factors data frame, required for attributes in an enumerated domain, must use only the
+ following recognized column headers:
+
+- attributeName (required)
+- code (required)
+- definition (required)
+
+The missingValues data frame, optional, can be used in the case that multiple missing value codes
+need to be set for the same attribute. This table must contain the following recognized column
+headers.
+
+- attributeName (required)
+- code (required)
+- definition (required)
 }
