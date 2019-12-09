@@ -922,9 +922,10 @@ test_that(
       definition = c("from table", "from table")
     )
     
-    att_list <- set_attributes(attributes, 
+    expect_warning(att_list <- set_attributes(attributes, 
                                col_classes = c("character", "character", "numeric"),
-                               missingValues = missing_values)
+                               missingValues = missing_values))
+    
     # set in both missing value and attributes table
     expect_equal("from table", att_list$attribute[[1]]$missingValueCode[[1]]$codeExplanation)
     # set only in attributes table
@@ -991,3 +992,17 @@ test_that(
     )
   })
 
+test_that("set_attributes returns a warning when units unrecognised", {
+
+df <- data.frame(
+  attributeName = "freq_occ",
+  attributeDefinition = "Frequency of occurence",
+  unit = NA,
+  numberType = "real",
+  minimum = "0",
+  maximum = "1",
+  stringsAsFactors = FALSE)
+
+expect_warning(set_attributes(df, col_classes = "numeric"))
+
+})
