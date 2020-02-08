@@ -5,7 +5,7 @@ Description: Work with Ecological Metadata Language ('EML') files.
     'EML' is a widely used metadata standard in the ecological and
     environmental sciences, described in Jones et al. (2006),
     <doi:10.1146/annurev.ecolsys.37.091305.110031>.
-Version: 2.0.1
+Version: 2.0.2
 Authors@R: c(
               person("Carl", "Boettiger", 
                   email = "cboettig@gmail.com", 
@@ -27,20 +27,21 @@ Authors@R: c(
                      comment = c(ORCID = "0000-0003-4703-1974"))
             )
 License: MIT + file LICENSE
-URL: https://github.com/ropensci/EML
+URL: https://docs.ropensci.org/EML, https://github.com/ropensci/EML
 BugReports: https://github.com/ropensci/EML/issues
 Encoding: UTF-8
 LazyData: true
 Depends: R (>= 2.10)
-Suggests: knitr, taxize, tibble, testthat, covr, EML, units,
+Suggests: knitr, taxadb, tibble, testthat, covr, EML, units,
         htmlwidgets, shiny, shinyjs, spelling
-Imports: xml2, methods, digest, emld (>= 0.0.0.9900), jqr, jsonlite,
-        uuid, rmarkdown, utils, dplyr
+Imports: xml2, methods, digest, emld (>= 0.4.0), jqr, jsonlite, uuid,
+        rmarkdown, utils, dplyr
 VignetteBuilder: knitr
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2
 Language: en-US
+Additional_repositories: https://cboettig.github.io/drat
 NeedsCompilation: no
-Packaged: 2019-12-09 05:29:07 UTC; cboettig
+Packaged: 2020-02-07 20:50:38 UTC; cboettig
 Author: Carl Boettiger [aut, cre, cph]
     (<https://orcid.org/0000-0002-1642-628X>),
   Matthew B. Jones [aut] (<https://orcid.org/0000-0003-0077-4738>),
@@ -50,4 +51,4 @@ Author: Carl Boettiger [aut, cre, cph]
   Jeanette Clark [ctb] (<https://orcid.org/0000-0003-4703-1974>)
 Maintainer: Carl Boettiger <cboettig@gmail.com>
 Repository: CRAN
-Date/Publication: 2019-12-09 10:40:02 UTC
+Date/Publication: 2020-02-08 06:10:15 UTC

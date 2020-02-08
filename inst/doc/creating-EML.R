@@ -1,11 +1,11 @@
-## ----include=FALSE-------------------------------------------------------
+## ----include=FALSE------------------------------------------------------------
 has_pandoc <-  rmarkdown::pandoc_available()
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 library(EML)
 library(emld)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 attributes <-
 tibble::tribble(
 ~attributeName, ~attributeDefinition,                                                 ~formatString, ~definition,        ~unit,   ~numberType,
@@ -19,7 +19,7 @@ tibble::tribble(
   "length",    "length of the species in meters (dummy example of numeric data)",     NA,            NA,                 "meter",  "real")
 
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 i.flag <- c(R = "real",
             I = "interpolated",
             B = "bad")
@@ -64,20 +64,20 @@ data.frame(
 )
 )
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 attributeList <- set_attributes(attributes, factors, col_classes = c("character", "Date", "Date", "Date", "factor", "factor", "factor", "numeric"))
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 physical <- set_physical("hf205-01-TPexp1.csv")
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 dataTable <- list(
                  entityName = "hf205-01-TPexp1.csv",
                  entityDescription = "tipping point experiment 1",
                  physical = physical,
                  attributeList = attributeList)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 geographicDescription <- "Harvard Forest Greenhouse, Tom Swamp Tract (Harvard Forest)"
 
 
@@ -90,26 +90,26 @@ coverage <-
                altitudeMin = 160, altitudeMaximum = 330,
                altitudeUnits = "meter")
 
-## ----eval=has_pandoc-----------------------------------------------------
+## ----eval=has_pandoc----------------------------------------------------------
 methods_file <- system.file("examples/hf205-methods.docx", package = "EML")
 methods <- set_methods(methods_file)
 
-## ----include=FALSE, eval=!has_pandoc-------------------------------------
+## ----include=FALSE, eval=!has_pandoc------------------------------------------
 #  ## placeholder if pandoc is not installed
 #  methods <- NULL
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 R_person <- person("Aaron", "Ellison", ,"fakeaddress@email.com", "cre", 
                   c(ORCID = "0000-0003-4151-6081"))
 aaron <- as_emld(R_person)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 others <- c(as.person("Benjamin Baiser"), as.person("Jennifer Sirota"))
 associatedParty <- as_emld(others)
 associatedParty[[1]]$role <- "Researcher"
 associatedParty[[2]]$role <- "Researcher"
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 HF_address <- list(
                   deliveryPoint = "324 North Main Street",
                   city = "Petersham",
@@ -117,12 +117,12 @@ HF_address <- list(
                   postalCode = "01366",
                   country = "USA")
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 publisher <- list(
                  organizationName = "Harvard Forest",
                  address = HF_address)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 contact <- 
   list(
     individualName = aaron$individualName,
@@ -132,7 +132,7 @@ contact <-
     phone = "000-000-0000")
 
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 keywordSet <- list(
     list(
         keywordThesaurus = "LTER controlled vocabulary",
@@ -150,7 +150,7 @@ keywordSet <- list(
         keyword = list("Harvard Forest", "HFR", "LTER", "USA")
         ))
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 pubDate <- "2012" 
 
 title <- "Thresholds and Tipping Points in a Sarracenia 
@@ -180,11 +180,11 @@ that make use of the dataset must include proper acknowledgement. For
 more information on LTER Network data access and use policies, please
 see: http://www.lternet.edu/data/netpolicy.html."
 
-## ----eval=has_pandoc-----------------------------------------------------
+## ----eval=has_pandoc----------------------------------------------------------
 abstract_file <-  system.file("examples/hf205-abstract.md", package = "EML")
 abstract <- set_TextType(abstract_file)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 dataset <- list(
                title = title,
                creator = aaron,
@@ -198,19 +198,19 @@ dataset <- list(
                methods = methods,
                dataTable = dataTable)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 eml <- list(
            packageId = uuid::UUIDgenerate(),
            system = "uuid", # type of identifier
            dataset = dataset)
 
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 write_eml(eml, "eml.xml")
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 eml_validate("eml.xml")
 
-## ----include=FALSE-------------------------------------------------------
+## ----include=FALSE------------------------------------------------------------
 unlink("eml.xml")
 
