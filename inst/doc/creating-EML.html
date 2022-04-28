@@ -12,23 +12,20 @@
 
 <meta name="author" content="Carl Boettiger" />
 
-<meta name="date" content="2021-02-26" />
+<meta name="date" content="2022-04-28" />
 
 <title>Creating EML</title>
 
-<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
-// v0.0.1
-// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
-
-document.addEventListener('DOMContentLoaded', function() {
-  const codeList = document.getElementsByClassName("sourceCode");
-  for (var i = 0; i < codeList.length; i++) {
-    var linkList = codeList[i].getElementsByTagName('a');
-    for (var j = 0; j < linkList.length; j++) {
-      if (linkList[j].innerHTML === "") {
-        linkList[j].setAttribute('aria-hidden', 'true');
-      }
-    }
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
   }
 });
 </script>
@@ -43,6 +40,7 @@ document.addEventListener('DOMContentLoaded', function() {
     </style>
 
 
+
 <style type="text/css">
   code {
     white-space: pre;
@@ -52,19 +50,19 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 </style>
 <style type="text/css" data-origin="pandoc">
-code.sourceCode > span { display: inline-block; line-height: 1.25; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-code.sourceCode > span:empty { height: 1.2em; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
 @media screen {
 div.sourceCode { overflow: auto; }
 }
 @media print {
-code.sourceCode { white-space: pre-wrap; }
-code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -84,7 +82,7 @@ pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-le
 div.sourceCode
   {   }
 @media screen {
-code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; font-weight: bold; } /* Alert */
 code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
@@ -336,267 +334,411 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">Creating EML</h1>
 <h4 class="author">Carl Boettiger</h4>
-<h4 class="date">2021-02-26</h4>
+<h4 class="date">2022-04-28</h4>
 
 
 
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">library</span>(EML)</span>
-<span id="cb1-2"><a href="#cb1-2"></a><span class="kw">library</span>(emld)</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(EML)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(emld)</span></code></pre></div>
 <p>Here we construct a common EML file, including:</p>
 <ul>
-<li>Constructing more complete lists of authors, publishers and contact.</li>
-<li>Summarizing the geographic, temporal, and taxonomic coverage of the dataset</li>
+<li>Constructing more complete lists of authors, publishers and
+contact.</li>
+<li>Summarizing the geographic, temporal, and taxonomic coverage of the
+dataset</li>
 <li>Reading in pages of methods descriptions from a Word document</li>
 <li>Adding arbitrary additional metadata</li>
-<li>Indicating the canonical citation to the paper that should be acknowledged when the data is re-used.<br />
+<li>Indicating the canonical citation to the paper that should be
+acknowledged when the data is re-used.<br />
 </li>
-<li>Conversion between EML and other metadata formats, such as NCBII and ISO standards.</li>
+<li>Conversion between EML and other metadata formats, such as NCBII and
+ISO standards.</li>
 </ul>
-<p>In so doing we will take a modular approach that will allow us to build up our metadata from reusable components, while also providing a more fine-grained control over the resulting output fields and files.</p>
+<p>In so doing we will take a modular approach that will allow us to
+build up our metadata from reusable components, while also providing a
+more fine-grained control over the resulting output fields and
+files.</p>
 <div id="overview-of-the-eml-hierarchy" class="section level3">
 <h3>Overview of the EML hierarchy</h3>
-<p>A basic knowledge of the components of an EML metadata file is essential to being able to take full advantage of the language. While more complete information can be found in the <a href="https://knb.ecoinformatics.org/#external//emlparser/docs/eml-2.1.1/index.html">official schema documentation</a>, here we provide a general overview of commonly used metadata elements most relevant to describing data tables.</p>
-<p>This schematic shows each of the metadata elements we will generate. Most these elements have sub-components (e.g. a ‘publisher’ may have a name, address, and so forth) which are not shown for simplicity. Other optional fields we will not be generating in this example are also not shown.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">-</span><span class="at"> eml</span></span>
-<span id="cb2-2"><a href="#cb2-2"></a><span class="at">  </span><span class="kw">-</span><span class="at"> dataset</span></span>
-<span id="cb2-3"><a href="#cb2-3"></a><span class="at">    </span><span class="kw">-</span><span class="at"> creator</span></span>
-<span id="cb2-4"><a href="#cb2-4"></a><span class="at">    </span><span class="kw">-</span><span class="at"> title</span></span>
-<span id="cb2-5"><a href="#cb2-5"></a><span class="at">    </span><span class="kw">-</span><span class="at"> publisher</span></span>
-<span id="cb2-6"><a href="#cb2-6"></a><span class="at">    </span><span class="kw">-</span><span class="at"> pubDate</span></span>
-<span id="cb2-7"><a href="#cb2-7"></a><span class="at">    </span><span class="kw">-</span><span class="at"> keywords</span></span>
-<span id="cb2-8"><a href="#cb2-8"></a><span class="at">    </span><span class="kw">-</span><span class="at"> abstract </span></span>
-<span id="cb2-9"><a href="#cb2-9"></a><span class="at">    </span><span class="kw">-</span><span class="at"> intellectualRights</span></span>
-<span id="cb2-10"><a href="#cb2-10"></a><span class="at">    </span><span class="kw">-</span><span class="at"> contact</span></span>
-<span id="cb2-11"><a href="#cb2-11"></a><span class="at">    </span><span class="kw">-</span><span class="at"> methods</span></span>
-<span id="cb2-12"><a href="#cb2-12"></a><span class="at">    </span><span class="kw">-</span><span class="at"> coverage</span></span>
-<span id="cb2-13"><a href="#cb2-13"></a><span class="at">      </span><span class="kw">-</span><span class="at"> geographicCoverage</span></span>
-<span id="cb2-14"><a href="#cb2-14"></a><span class="at">      </span><span class="kw">-</span><span class="at"> temporalCoverage</span></span>
-<span id="cb2-15"><a href="#cb2-15"></a><span class="at">      </span><span class="kw">-</span><span class="at"> taxonomicCoverage</span></span>
-<span id="cb2-16"><a href="#cb2-16"></a><span class="at">    </span><span class="kw">-</span><span class="at"> dataTable</span></span>
-<span id="cb2-17"><a href="#cb2-17"></a><span class="at">      </span><span class="kw">-</span><span class="at"> entityName</span></span>
-<span id="cb2-18"><a href="#cb2-18"></a><span class="at">      </span><span class="kw">-</span><span class="at"> entityDescription</span></span>
-<span id="cb2-19"><a href="#cb2-19"></a><span class="at">      </span><span class="kw">-</span><span class="at"> physical</span></span>
-<span id="cb2-20"><a href="#cb2-20"></a><span class="at">      </span><span class="kw">-</span><span class="at"> attributeList</span></span></code></pre></div>
+<p>A basic knowledge of the components of an EML metadata file is
+essential to being able to take full advantage of the language. While
+more complete information can be found in the <a href="https://knb.ecoinformatics.org/#external//emlparser/docs/eml-2.1.1/index.html">official
+schema documentation</a>, here we provide a general overview of commonly
+used metadata elements most relevant to describing data tables.</p>
+<p>This schematic shows each of the metadata elements we will generate.
+Most these elements have sub-components (e.g. a ‘publisher’ may have a
+name, address, and so forth) which are not shown for simplicity. Other
+optional fields we will not be generating in this example are also not
+shown.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> eml</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> dataset</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> creator</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> title</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> publisher</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> pubDate</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> keywords</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> abstract </span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> intellectualRights</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> contact</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> methods</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> coverage</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> geographicCoverage</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> temporalCoverage</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> taxonomicCoverage</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> dataTable</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> entityName</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> entityDescription</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> physical</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> attributeList</span></span></code></pre></div>
 </div>
 <div id="our-example-re-creating-hf205.xml" class="section level3">
 <h3>Our example: (re)-creating hf205.xml</h3>
-<p>In this example, we will use R to re-generate the EML metadata originally published by <a href="https://harvardforest.fas.harvard.edu/harvard-forest-data-archive">Ellison <em>et al</em> (2012), HF205</a> through the Harvard Forest Long Term Ecological Research Center, accompanying the PNAS paper <a href="https://doi.org/10.1073/pnas.1221037110">Sirota <em>et al</em> (2013)</a>. We have made only a few modifications to simplify the presentation of this tutorial, so our resulting EML will not be perfectly identical to the original.</p>
+<p>In this example, we will use R to re-generate the EML metadata
+originally published by <a href="https://harvardforest.fas.harvard.edu/harvard-forest-data-archive">Ellison
+<em>et al</em> (2012), HF205</a> through the Harvard Forest Long Term
+Ecological Research Center, accompanying the PNAS paper (Sirota <em>et
+al</em>. 2013; <a href="doi:10.1073/pnas.1221037110" class="uri">doi:10.1073/pnas.1221037110</a>). We have made only a few
+modifications to simplify the presentation of this tutorial, so our
+resulting EML will not be perfectly identical to the original.</p>
 </div>
 <div id="our-strategy" class="section level3">
 <h3>Our strategy</h3>
-<p>We will build this EML file from the bottom up, starting with the two main components of a <code>dataTable</code> indicated above: the <code>attributeList</code> and the <code>physical</code> file type. We will then slip these two pieces into place inside a <code>dataTable</code> element, and slip that into our <code>eml</code> element along with the rest of the generic metadata, much like building a puzzle or nesting a set of Russian dolls.</p>
-<p>The original metadata file was created in association with the publication in PNAS based on a Microsoft Word document template that Harvard Forest provides to the academic researchers. Metadata from this template is then read off by hand and an EML file is generated using a combination of a commercial XML editing platform (Oxygen) for commonly used higher-level elements, and the Java platform <code>Morpho</code> provided by the EML development team for lower level attribute metadata.</p>
+<p>We will build this EML file from the bottom up, starting with the two
+main components of a <code>dataTable</code> indicated above: the
+<code>attributeList</code> and the <code>physical</code> file type. We
+will then slip these two pieces into place inside a
+<code>dataTable</code> element, and slip that into our <code>eml</code>
+element along with the rest of the generic metadata, much like building
+a puzzle or nesting a set of Russian dolls.</p>
+<p>The original metadata file was created in association with the
+publication in PNAS based on a Microsoft Word document template that
+Harvard Forest provides to the academic researchers. Metadata from this
+template is then read off by hand and an EML file is generated using a
+combination of a commercial XML editing platform (Oxygen) for commonly
+used higher-level elements, and the Java platform <code>Morpho</code>
+provided by the EML development team for lower level attribute
+metadata.</p>
 </div>
 <div id="attribute-metadata" class="section level2">
 <h2>Attribute Metadata</h2>
-<p>A fundamental part of EML metadata is a description of the attributes (usually columns) of a text file (usually a csv file) containing the data being described. This is the heart of many EML files.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>attributes &lt;-</span>
-<span id="cb3-2"><a href="#cb3-2"></a>tibble<span class="op">::</span><span class="kw">tribble</span>(</span>
-<span id="cb3-3"><a href="#cb3-3"></a><span class="op">~</span>attributeName, <span class="op">~</span>attributeDefinition,                                                 <span class="op">~</span>formatString, <span class="op">~</span>definition,        <span class="op">~</span>unit,   <span class="op">~</span>numberType,</span>
-<span id="cb3-4"><a href="#cb3-4"></a>  <span class="st">&quot;run.num&quot;</span>,    <span class="st">&quot;which run number (=block). Range: 1 - 6. (integer)&quot;</span>,                 <span class="ot">NA</span>,            <span class="st">&quot;which run number&quot;</span>, <span class="ot">NA</span>,       <span class="ot">NA</span>,</span>
-<span id="cb3-5"><a href="#cb3-5"></a>  <span class="st">&quot;year&quot;</span>,       <span class="st">&quot;year, 2012&quot;</span>,                                                         <span class="st">&quot;YYYY&quot;</span>,        <span class="ot">NA</span>,                 <span class="ot">NA</span>,       <span class="ot">NA</span>,</span>
-<span id="cb3-6"><a href="#cb3-6"></a>  <span class="st">&quot;day&quot;</span>,        <span class="st">&quot;Julian day. Range: 170 - 209.&quot;</span>,                                      <span class="st">&quot;DDD&quot;</span>,         <span class="ot">NA</span>,                 <span class="ot">NA</span>,       <span class="ot">NA</span>,</span>
-<span id="cb3-7"><a href="#cb3-7"></a>  <span class="st">&quot;hour.min&quot;</span>,   <span class="st">&quot;hour and minute of observation. Range 1 - 2400 (integer)&quot;</span>,           <span class="st">&quot;hhmm&quot;</span>,        <span class="ot">NA</span>,                 <span class="ot">NA</span>,       <span class="ot">NA</span>,</span>
-<span id="cb3-8"><a href="#cb3-8"></a>  <span class="st">&quot;i.flag&quot;</span>,     <span class="st">&quot;is variable Real, Interpolated or Bad (character/factor)&quot;</span>,           <span class="ot">NA</span>,            <span class="ot">NA</span>,                 <span class="ot">NA</span>,       <span class="ot">NA</span>,</span>
-<span id="cb3-9"><a href="#cb3-9"></a>  <span class="st">&quot;variable&quot;</span>,   <span class="st">&quot;what variable being measured in what treatment (character/factor).&quot;</span>, <span class="ot">NA</span>,            <span class="ot">NA</span>,                 <span class="ot">NA</span>,       <span class="ot">NA</span>,</span>
-<span id="cb3-10"><a href="#cb3-10"></a>  <span class="st">&quot;value.i&quot;</span>,    <span class="st">&quot;value of measured variable for run.num on year/day/hour.min.&quot;</span>,       <span class="ot">NA</span>,            <span class="ot">NA</span>,                 <span class="ot">NA</span>,       <span class="ot">NA</span>,</span>
-<span id="cb3-11"><a href="#cb3-11"></a>  <span class="st">&quot;length&quot;</span>,    <span class="st">&quot;length of the species in meters (dummy example of numeric data)&quot;</span>,     <span class="ot">NA</span>,            <span class="ot">NA</span>,                 <span class="st">&quot;meter&quot;</span>,  <span class="st">&quot;real&quot;</span>)</span></code></pre></div>
-<p>Every column (attribute) in the dataset needs an <code>attributeName</code> (column name, as it appears in the CSV file) and <code>attributeDefinition</code>, a longer description of what the column contains. Additional information required depends on the data type:</p>
-<p><strong>Strings</strong> (character vectors) data just needs a “definition” value, often the same as the <code>attributeDefinition</code> in this case.</p>
-<p><strong>Numeric</strong> data needs a <code>numberType</code> (e.g. “real”, “integer”), and a unit.</p>
+<p>A fundamental part of EML metadata is a description of the attributes
+(usually columns) of a text file (usually a csv file) containing the
+data being described. This is the heart of many EML files.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>attributes <span class="ot">&lt;-</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>tibble<span class="sc">::</span><span class="fu">tribble</span>(</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="sc">~</span>attributeName, <span class="sc">~</span>attributeDefinition,                                                 <span class="sc">~</span>formatString, <span class="sc">~</span>definition,        <span class="sc">~</span>unit,   <span class="sc">~</span>numberType,</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;run.num&quot;</span>,    <span class="st">&quot;which run number (=block). Range: 1 - 6. (integer)&quot;</span>,                 <span class="cn">NA</span>,            <span class="st">&quot;which run number&quot;</span>, <span class="cn">NA</span>,       <span class="cn">NA</span>,</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;year&quot;</span>,       <span class="st">&quot;year, 2012&quot;</span>,                                                         <span class="st">&quot;YYYY&quot;</span>,        <span class="cn">NA</span>,                 <span class="cn">NA</span>,       <span class="cn">NA</span>,</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;day&quot;</span>,        <span class="st">&quot;Julian day. Range: 170 - 209.&quot;</span>,                                      <span class="st">&quot;DDD&quot;</span>,         <span class="cn">NA</span>,                 <span class="cn">NA</span>,       <span class="cn">NA</span>,</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;hour.min&quot;</span>,   <span class="st">&quot;hour and minute of observation. Range 1 - 2400 (integer)&quot;</span>,           <span class="st">&quot;hhmm&quot;</span>,        <span class="cn">NA</span>,                 <span class="cn">NA</span>,       <span class="cn">NA</span>,</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;i.flag&quot;</span>,     <span class="st">&quot;is variable Real, Interpolated or Bad (character/factor)&quot;</span>,           <span class="cn">NA</span>,            <span class="cn">NA</span>,                 <span class="cn">NA</span>,       <span class="cn">NA</span>,</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;variable&quot;</span>,   <span class="st">&quot;what variable being measured in what treatment (character/factor).&quot;</span>, <span class="cn">NA</span>,            <span class="cn">NA</span>,                 <span class="cn">NA</span>,       <span class="cn">NA</span>,</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;value.i&quot;</span>,    <span class="st">&quot;value of measured variable for run.num on year/day/hour.min.&quot;</span>,       <span class="cn">NA</span>,            <span class="cn">NA</span>,                 <span class="cn">NA</span>,       <span class="cn">NA</span>,</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;length&quot;</span>,    <span class="st">&quot;length of the species in meters (dummy example of numeric data)&quot;</span>,     <span class="cn">NA</span>,            <span class="cn">NA</span>,                 <span class="st">&quot;meter&quot;</span>,  <span class="st">&quot;real&quot;</span>)</span></code></pre></div>
+<p>Every column (attribute) in the dataset needs an
+<code>attributeName</code> (column name, as it appears in the CSV file)
+and <code>attributeDefinition</code>, a longer description of what the
+column contains. Additional information required depends on the data
+type:</p>
+<p><strong>Strings</strong> (character vectors) data just needs a
+“definition” value, often the same as the
+<code>attributeDefinition</code> in this case.</p>
+<p><strong>Numeric</strong> data needs a <code>numberType</code>
+(e.g. “real”, “integer”), and a unit.</p>
 <p><strong>Dates</strong> need a date format.</p>
-<p><strong>Factors</strong> (enumerated domains) need to specify definitions for each of the code terms appearing in the data columns. This does not fit so nicely in the above table, where each attribute is a single row, so if data uses factors (instead of non-enumerated strings), these definitions must be provided in a separate table. The format expected of this table has three columns: <code>attributeName</code> (as before), <code>code</code>, and <code>definition</code>. Note that <code>attributeName</code> is simply repeated for all codes belonging to a common attribute.</p>
-<p>In this case we have three attributes that are factors, To make the code below more readable (aligning code and definitions side by side), we define these first as named character vectors, and convert that to a <code>data.frame</code>. (The <code>dplyr::frame_data</code> function also permits this more readable way to define data.frames inline).</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a>i.flag &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dt">R =</span> <span class="st">&quot;real&quot;</span>,</span>
-<span id="cb4-2"><a href="#cb4-2"></a>            <span class="dt">I =</span> <span class="st">&quot;interpolated&quot;</span>,</span>
-<span id="cb4-3"><a href="#cb4-3"></a>            <span class="dt">B =</span> <span class="st">&quot;bad&quot;</span>)</span>
-<span id="cb4-4"><a href="#cb4-4"></a>variable &lt;-<span class="st"> </span><span class="kw">c</span>(</span>
-<span id="cb4-5"><a href="#cb4-5"></a>  <span class="dt">control  =</span> <span class="st">&quot;no prey added&quot;</span>,</span>
-<span id="cb4-6"><a href="#cb4-6"></a>  <span class="dt">low      =</span> <span class="st">&quot;0.125 mg prey added ml-1 d-1&quot;</span>,</span>
-<span id="cb4-7"><a href="#cb4-7"></a>  <span class="dt">med.low  =</span> <span class="st">&quot;0,25 mg prey added ml-1 d-1&quot;</span>,</span>
-<span id="cb4-8"><a href="#cb4-8"></a>  <span class="dt">med.high =</span> <span class="st">&quot;0.5 mg prey added ml-1 d-1&quot;</span>,</span>
-<span id="cb4-9"><a href="#cb4-9"></a>  <span class="dt">high     =</span> <span class="st">&quot;1.0 mg prey added ml-1 d-1&quot;</span>,</span>
-<span id="cb4-10"><a href="#cb4-10"></a>  <span class="dt">air.temp =</span> <span class="st">&quot;air temperature measured just above all plants (1 thermocouple)&quot;</span>,</span>
-<span id="cb4-11"><a href="#cb4-11"></a>  <span class="dt">water.temp =</span> <span class="st">&quot;water temperature measured within each pitcher&quot;</span>,</span>
-<span id="cb4-12"><a href="#cb4-12"></a>  <span class="dt">par       =</span> <span class="st">&quot;photosynthetic active radiation (PAR) measured just above all plants (1 sensor)&quot;</span></span>
-<span id="cb4-13"><a href="#cb4-13"></a>)</span>
-<span id="cb4-14"><a href="#cb4-14"></a></span>
-<span id="cb4-15"><a href="#cb4-15"></a>value.i &lt;-<span class="st"> </span><span class="kw">c</span>(</span>
-<span id="cb4-16"><a href="#cb4-16"></a>  <span class="dt">control  =</span> <span class="st">&quot;% dissolved oxygen&quot;</span>,</span>
-<span id="cb4-17"><a href="#cb4-17"></a>  <span class="dt">low      =</span> <span class="st">&quot;% dissolved oxygen&quot;</span>,</span>
-<span id="cb4-18"><a href="#cb4-18"></a>  <span class="dt">med.low  =</span> <span class="st">&quot;% dissolved oxygen&quot;</span>,</span>
-<span id="cb4-19"><a href="#cb4-19"></a>  <span class="dt">med.high =</span> <span class="st">&quot;% dissolved oxygen&quot;</span>,</span>
-<span id="cb4-20"><a href="#cb4-20"></a>  <span class="dt">high     =</span> <span class="st">&quot;% dissolved oxygen&quot;</span>,</span>
-<span id="cb4-21"><a href="#cb4-21"></a>  <span class="dt">air.temp =</span> <span class="st">&quot;degrees C&quot;</span>,</span>
-<span id="cb4-22"><a href="#cb4-22"></a>  <span class="dt">water.temp =</span> <span class="st">&quot;degrees C&quot;</span>,</span>
-<span id="cb4-23"><a href="#cb4-23"></a>  <span class="dt">par      =</span> <span class="st">&quot;micromoles m-1 s-1&quot;</span></span>
-<span id="cb4-24"><a href="#cb4-24"></a>)</span>
-<span id="cb4-25"><a href="#cb4-25"></a></span>
-<span id="cb4-26"><a href="#cb4-26"></a><span class="co">## Write these into the data.frame format</span></span>
-<span id="cb4-27"><a href="#cb4-27"></a>factors &lt;-<span class="st"> </span><span class="kw">rbind</span>(</span>
-<span id="cb4-28"><a href="#cb4-28"></a><span class="kw">data.frame</span>(</span>
-<span id="cb4-29"><a href="#cb4-29"></a>  <span class="dt">attributeName =</span> <span class="st">&quot;i.flag&quot;</span>,</span>
-<span id="cb4-30"><a href="#cb4-30"></a>  <span class="dt">code =</span> <span class="kw">names</span>(i.flag),</span>
-<span id="cb4-31"><a href="#cb4-31"></a>  <span class="dt">definition =</span> <span class="kw">unname</span>(i.flag)</span>
-<span id="cb4-32"><a href="#cb4-32"></a>),</span>
-<span id="cb4-33"><a href="#cb4-33"></a><span class="kw">data.frame</span>(</span>
-<span id="cb4-34"><a href="#cb4-34"></a>  <span class="dt">attributeName =</span> <span class="st">&quot;variable&quot;</span>,</span>
-<span id="cb4-35"><a href="#cb4-35"></a>  <span class="dt">code =</span> <span class="kw">names</span>(variable),</span>
-<span id="cb4-36"><a href="#cb4-36"></a>  <span class="dt">definition =</span> <span class="kw">unname</span>(variable)</span>
-<span id="cb4-37"><a href="#cb4-37"></a>),</span>
-<span id="cb4-38"><a href="#cb4-38"></a><span class="kw">data.frame</span>(</span>
-<span id="cb4-39"><a href="#cb4-39"></a>  <span class="dt">attributeName =</span> <span class="st">&quot;value.i&quot;</span>,</span>
-<span id="cb4-40"><a href="#cb4-40"></a>  <span class="dt">code =</span> <span class="kw">names</span>(value.i),</span>
-<span id="cb4-41"><a href="#cb4-41"></a>  <span class="dt">definition =</span> <span class="kw">unname</span>(value.i)</span>
-<span id="cb4-42"><a href="#cb4-42"></a>)</span>
-<span id="cb4-43"><a href="#cb4-43"></a>)</span></code></pre></div>
-<p>With these two data frames in place, we are ready to create our <code>attributeList</code> element:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>attributeList &lt;-<span class="st"> </span><span class="kw">set_attributes</span>(attributes, factors, <span class="dt">col_classes =</span> <span class="kw">c</span>(<span class="st">&quot;character&quot;</span>, <span class="st">&quot;Date&quot;</span>, <span class="st">&quot;Date&quot;</span>, <span class="st">&quot;Date&quot;</span>, <span class="st">&quot;factor&quot;</span>, <span class="st">&quot;factor&quot;</span>, <span class="st">&quot;factor&quot;</span>, <span class="st">&quot;numeric&quot;</span>))</span></code></pre></div>
+<p><strong>Factors</strong> (enumerated domains) need to specify
+definitions for each of the code terms appearing in the data columns.
+This does not fit so nicely in the above table, where each attribute is
+a single row, so if data uses factors (instead of non-enumerated
+strings), these definitions must be provided in a separate table. The
+format expected of this table has three columns:
+<code>attributeName</code> (as before), <code>code</code>, and
+<code>definition</code>. Note that <code>attributeName</code> is simply
+repeated for all codes belonging to a common attribute.</p>
+<p>In this case we have three attributes that are factors, To make the
+code below more readable (aligning code and definitions side by side),
+we define these first as named character vectors, and convert that to a
+<code>data.frame</code>. (The <code>dplyr::frame_data</code> function
+also permits this more readable way to define data.frames inline).</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>i.flag <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">R =</span> <span class="st">&quot;real&quot;</span>,</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>            <span class="at">I =</span> <span class="st">&quot;interpolated&quot;</span>,</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">B =</span> <span class="st">&quot;bad&quot;</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>variable <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">control  =</span> <span class="st">&quot;no prey added&quot;</span>,</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">low      =</span> <span class="st">&quot;0.125 mg prey added ml-1 d-1&quot;</span>,</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">med.low  =</span> <span class="st">&quot;0,25 mg prey added ml-1 d-1&quot;</span>,</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">med.high =</span> <span class="st">&quot;0.5 mg prey added ml-1 d-1&quot;</span>,</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">high     =</span> <span class="st">&quot;1.0 mg prey added ml-1 d-1&quot;</span>,</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">air.temp =</span> <span class="st">&quot;air temperature measured just above all plants (1 thermocouple)&quot;</span>,</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">water.temp =</span> <span class="st">&quot;water temperature measured within each pitcher&quot;</span>,</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">par       =</span> <span class="st">&quot;photosynthetic active radiation (PAR) measured just above all plants (1 sensor)&quot;</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>value.i <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">control  =</span> <span class="st">&quot;% dissolved oxygen&quot;</span>,</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">low      =</span> <span class="st">&quot;% dissolved oxygen&quot;</span>,</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">med.low  =</span> <span class="st">&quot;% dissolved oxygen&quot;</span>,</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">med.high =</span> <span class="st">&quot;% dissolved oxygen&quot;</span>,</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">high     =</span> <span class="st">&quot;% dissolved oxygen&quot;</span>,</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">air.temp =</span> <span class="st">&quot;degrees C&quot;</span>,</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">water.temp =</span> <span class="st">&quot;degrees C&quot;</span>,</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">par      =</span> <span class="st">&quot;micromoles m-1 s-1&quot;</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="do">## Write these into the data.frame format</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>factors <span class="ot">&lt;-</span> <span class="fu">rbind</span>(</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="fu">data.frame</span>(</span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>  <span class="at">attributeName =</span> <span class="st">&quot;i.flag&quot;</span>,</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>  <span class="at">code =</span> <span class="fu">names</span>(i.flag),</span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>  <span class="at">definition =</span> <span class="fu">unname</span>(i.flag)</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>),</span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a><span class="fu">data.frame</span>(</span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>  <span class="at">attributeName =</span> <span class="st">&quot;variable&quot;</span>,</span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>  <span class="at">code =</span> <span class="fu">names</span>(variable),</span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>  <span class="at">definition =</span> <span class="fu">unname</span>(variable)</span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>),</span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a><span class="fu">data.frame</span>(</span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>  <span class="at">attributeName =</span> <span class="st">&quot;value.i&quot;</span>,</span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>  <span class="at">code =</span> <span class="fu">names</span>(value.i),</span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>  <span class="at">definition =</span> <span class="fu">unname</span>(value.i)</span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<p>With these two data frames in place, we are ready to create our
+<code>attributeList</code> element:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>attributeList <span class="ot">&lt;-</span> <span class="fu">set_attributes</span>(attributes, factors, <span class="at">col_classes =</span> <span class="fu">c</span>(<span class="st">&quot;character&quot;</span>, <span class="st">&quot;Date&quot;</span>, <span class="st">&quot;Date&quot;</span>, <span class="st">&quot;Date&quot;</span>, <span class="st">&quot;factor&quot;</span>, <span class="st">&quot;factor&quot;</span>, <span class="st">&quot;factor&quot;</span>, <span class="st">&quot;numeric&quot;</span>))</span></code></pre></div>
 </div>
 <div id="data-file-format" class="section level2">
 <h2>Data file format</h2>
-<p>The documentation of a <code>dataTable</code> also requires a description of the file format itself. From where can the data file be downloaded? Is it in CSV format, or TSV (tab-separated), or some other format? Are there header lines that should be skipped? This information documents the physical file itself, and is provided using the <code>physical</code> child element to the <code>dataTable</code>. To assist in documenting common file types such as CSV files, the <code>EML</code> R package provides the function <code>set_physical</code>, which takes as arguments many of these common options. By default these options are already set to document a standard <code>csv</code> formatted object, so we do not need to specify delimiters and so forth if our file conforms to that. We simply provide the name of the file, which is used as the <code>objectName</code>. (See examples for <code>set_physical()</code> for reading other common variations, analogous to the options covered in R’s <code>read.table()</code> function.)</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>physical &lt;-<span class="st"> </span><span class="kw">set_physical</span>(<span class="st">&quot;hf205-01-TPexp1.csv&quot;</span>)</span></code></pre></div>
+<p>The documentation of a <code>dataTable</code> also requires a
+description of the file format itself. From where can the data file be
+downloaded? Is it in CSV format, or TSV (tab-separated), or some other
+format? Are there header lines that should be skipped? This information
+documents the physical file itself, and is provided using the
+<code>physical</code> child element to the <code>dataTable</code>. To
+assist in documenting common file types such as CSV files, the
+<code>EML</code> R package provides the function
+<code>set_physical</code>, which takes as arguments many of these common
+options. By default these options are already set to document a standard
+<code>csv</code> formatted object, so we do not need to specify
+delimiters and so forth if our file conforms to that. We simply provide
+the name of the file, which is used as the <code>objectName</code>. (See
+examples for <code>set_physical()</code> for reading other common
+variations, analogous to the options covered in R’s
+<code>read.table()</code> function.)</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>physical <span class="ot">&lt;-</span> <span class="fu">set_physical</span>(<span class="st">&quot;hf205-01-TPexp1.csv&quot;</span>)</span></code></pre></div>
 </div>
 <div id="assembling-the-datatable" class="section level2">
 <h2>Assembling the <code>dataTable</code></h2>
-<p>Once we have defined the <code>attributeList</code> and <code>physical</code> file, we can now assemble the <code>dataTable</code> element itself. Unlike the old <code>EML</code> R package, in <code>EML</code> version 2.0 there is no need to call <code>new()</code> to create elements. Everything is just a list. Template lists for a given class can be viewed with the <code>emld::template()</code> function.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>dataTable &lt;-<span class="st"> </span><span class="kw">list</span>(</span>
-<span id="cb7-2"><a href="#cb7-2"></a>                 <span class="dt">entityName =</span> <span class="st">&quot;hf205-01-TPexp1.csv&quot;</span>,</span>
-<span id="cb7-3"><a href="#cb7-3"></a>                 <span class="dt">entityDescription =</span> <span class="st">&quot;tipping point experiment 1&quot;</span>,</span>
-<span id="cb7-4"><a href="#cb7-4"></a>                 <span class="dt">physical =</span> physical,</span>
-<span id="cb7-5"><a href="#cb7-5"></a>                 <span class="dt">attributeList =</span> attributeList)</span></code></pre></div>
+<p>Once we have defined the <code>attributeList</code> and
+<code>physical</code> file, we can now assemble the
+<code>dataTable</code> element itself. Unlike the old <code>EML</code> R
+package, in <code>EML</code> version 2.0 there is no need to call
+<code>new()</code> to create elements. Everything is just a list.
+Template lists for a given class can be viewed with the
+<code>emld::template()</code> function.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>dataTable <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>                 <span class="at">entityName =</span> <span class="st">&quot;hf205-01-TPexp1.csv&quot;</span>,</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>                 <span class="at">entityDescription =</span> <span class="st">&quot;tipping point experiment 1&quot;</span>,</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>                 <span class="at">physical =</span> physical,</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>                 <span class="at">attributeList =</span> attributeList)</span></code></pre></div>
 </div>
 <div id="coverage-metadata" class="section level2">
 <h2>Coverage metadata</h2>
-<p>One of the most common and useful types of metadata is coverage information, specifying the temporal, taxonomic, and geographic coverage of the data. This kind of metadata is frequently indexed by data repositories, allowing users to search for all data about a specific region, time, or species. In EML, these descriptions can take many forms, allowing for detailed descriptions as well as more general terms when such precision is not possible (such as geological epoch instead of date range, or higher taxonomic rank information in place of species definitions.)</p>
-<p>Most common specifications can be made using the more convenient but less flexible <code>set_coverage()</code> function in EML. This function takes a date range or list of specific dates, a list of scientific names, a geographic description and bounding boxes, as shown here:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>geographicDescription &lt;-<span class="st"> &quot;Harvard Forest Greenhouse, Tom Swamp Tract (Harvard Forest)&quot;</span></span>
-<span id="cb8-2"><a href="#cb8-2"></a></span>
-<span id="cb8-3"><a href="#cb8-3"></a></span>
-<span id="cb8-4"><a href="#cb8-4"></a>coverage &lt;-<span class="st"> </span></span>
-<span id="cb8-5"><a href="#cb8-5"></a><span class="st">  </span><span class="kw">set_coverage</span>(<span class="dt">begin =</span> <span class="st">&#39;2012-06-01&#39;</span>, <span class="dt">end =</span> <span class="st">&#39;2013-12-31&#39;</span>,</span>
-<span id="cb8-6"><a href="#cb8-6"></a>               <span class="dt">sci_names =</span> <span class="st">&quot;Sarracenia purpurea&quot;</span>,</span>
-<span id="cb8-7"><a href="#cb8-7"></a>               <span class="dt">geographicDescription =</span> geographicDescription,</span>
-<span id="cb8-8"><a href="#cb8-8"></a>               <span class="dt">west =</span> <span class="fl">-122.44</span>, <span class="dt">east =</span> <span class="fl">-117.15</span>, </span>
-<span id="cb8-9"><a href="#cb8-9"></a>               <span class="dt">north =</span> <span class="fl">37.38</span>, <span class="dt">south =</span> <span class="fl">30.00</span>,</span>
-<span id="cb8-10"><a href="#cb8-10"></a>               <span class="dt">altitudeMin =</span> <span class="dv">160</span>, <span class="dt">altitudeMaximum =</span> <span class="dv">330</span>,</span>
-<span id="cb8-11"><a href="#cb8-11"></a>               <span class="dt">altitudeUnits =</span> <span class="st">&quot;meter&quot;</span>)</span></code></pre></div>
+<p>One of the most common and useful types of metadata is coverage
+information, specifying the temporal, taxonomic, and geographic coverage
+of the data. This kind of metadata is frequently indexed by data
+repositories, allowing users to search for all data about a specific
+region, time, or species. In EML, these descriptions can take many
+forms, allowing for detailed descriptions as well as more general terms
+when such precision is not possible (such as geological epoch instead of
+date range, or higher taxonomic rank information in place of species
+definitions.)</p>
+<p>Most common specifications can be made using the more convenient but
+less flexible <code>set_coverage()</code> function in EML. This function
+takes a date range or list of specific dates, a list of scientific
+names, a geographic description and bounding boxes, as shown here:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>geographicDescription <span class="ot">&lt;-</span> <span class="st">&quot;Harvard Forest Greenhouse, Tom Swamp Tract (Harvard Forest)&quot;</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>coverage <span class="ot">&lt;-</span> </span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_coverage</span>(<span class="at">begin =</span> <span class="st">&#39;2012-06-01&#39;</span>, <span class="at">end =</span> <span class="st">&#39;2013-12-31&#39;</span>,</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>               <span class="at">sci_names =</span> <span class="st">&quot;Sarracenia purpurea&quot;</span>,</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>               <span class="at">geographicDescription =</span> geographicDescription,</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>               <span class="at">west =</span> <span class="sc">-</span><span class="fl">122.44</span>, <span class="at">east =</span> <span class="sc">-</span><span class="fl">117.15</span>, </span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>               <span class="at">north =</span> <span class="fl">37.38</span>, <span class="at">south =</span> <span class="fl">30.00</span>,</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>               <span class="at">altitudeMin =</span> <span class="dv">160</span>, <span class="at">altitudeMaximum =</span> <span class="dv">330</span>,</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>               <span class="at">altitudeUnits =</span> <span class="st">&quot;meter&quot;</span>)</span></code></pre></div>
 </div>
 <div id="creating-methods" class="section level2">
 <h2>Creating methods</h2>
-<p>Careful documentation of the methods involved in the experimental design, measurement and collection of data are a key part of metadata. Though frequently documented in scientific papers, such method sections may be too brief or incomplete, and may become more readily disconnected from the data file itself. Such documentation is usually written using word-processing software such as MS Word, LaTeX or markdown. Users with <code>pandoc</code> installed (which ships as part of RStudio) can install the <code>rmarkdown</code> package to take advantage of its automatic conversion into the DocBook XML format used by EML. Here we open a MS Word file with the methods and read this into our methods element using the helper function <code>set_methods()</code>. While not used in this example, note that the <code>set_methods()</code> function also includes many optional arguments for documenting additional information about sampling, or relevant citations.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a>methods_file &lt;-<span class="st"> </span><span class="kw">system.file</span>(<span class="st">&quot;examples/hf205-methods.docx&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;EML&quot;</span>)</span>
-<span id="cb9-2"><a href="#cb9-2"></a>methods &lt;-<span class="st"> </span><span class="kw">set_methods</span>(methods_file)</span></code></pre></div>
+<p>Careful documentation of the methods involved in the experimental
+design, measurement and collection of data are a key part of metadata.
+Though frequently documented in scientific papers, such method sections
+may be too brief or incomplete, and may become more readily disconnected
+from the data file itself. Such documentation is usually written using
+word-processing software such as MS Word, LaTeX or markdown. Users with
+<code>pandoc</code> installed (which ships as part of RStudio) can
+install the <code>rmarkdown</code> package to take advantage of its
+automatic conversion into the DocBook XML format used by EML. Here we
+open a MS Word file with the methods and read this into our methods
+element using the helper function <code>set_methods()</code>. While not
+used in this example, note that the <code>set_methods()</code> function
+also includes many optional arguments for documenting additional
+information about sampling, or relevant citations.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>methods_file <span class="ot">&lt;-</span> <span class="fu">system.file</span>(<span class="st">&quot;examples/hf205-methods.docx&quot;</span>, <span class="at">package =</span> <span class="st">&quot;EML&quot;</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>methods <span class="ot">&lt;-</span> <span class="fu">set_methods</span>(methods_file)</span></code></pre></div>
 </div>
 <div id="creating-parties" class="section level2">
 <h2>Creating parties</h2>
-<p>Individuals and organizations appear in many capacities in an EML document. Meanwhile, R already has a native object class, <code>person</code> for describing individuals, which it uses in citations and package descriptions, among other things. We can use native R function <code>person()</code> to create an R <code>person</code> object. Often it is more convenient to use R’s coercion function, <code>as.person()</code>, to turn a string with standardized notation into a <code>person</code> class (Though this is not always reliable, for instance, in surnames containing whitespace). However it is constructed, a <code>person</code> class can then be coerced into the appropriate EML object like so:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a>R_person &lt;-<span class="st"> </span><span class="kw">person</span>(<span class="st">&quot;Aaron&quot;</span>, <span class="st">&quot;Ellison&quot;</span>, ,<span class="st">&quot;fakeaddress@email.com&quot;</span>, <span class="st">&quot;cre&quot;</span>, </span>
-<span id="cb10-2"><a href="#cb10-2"></a>                  <span class="kw">c</span>(<span class="dt">ORCID =</span> <span class="st">&quot;0000-0003-4151-6081&quot;</span>))</span>
-<span id="cb10-3"><a href="#cb10-3"></a>aaron &lt;-<span class="st"> </span><span class="kw">as_emld</span>(R_person)</span></code></pre></div>
-<p>Likewise this method can be applied to a list of <code>person</code> objects:</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a>others &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="kw">as.person</span>(<span class="st">&quot;Benjamin Baiser&quot;</span>), <span class="kw">as.person</span>(<span class="st">&quot;Jennifer Sirota&quot;</span>))</span>
-<span id="cb11-2"><a href="#cb11-2"></a>associatedParty &lt;-<span class="st"> </span><span class="kw">as_emld</span>(others)</span>
-<span id="cb11-3"><a href="#cb11-3"></a>associatedParty[[<span class="dv">1</span>]]<span class="op">$</span>role &lt;-<span class="st"> &quot;Researcher&quot;</span></span>
-<span id="cb11-4"><a href="#cb11-4"></a>associatedParty[[<span class="dv">2</span>]]<span class="op">$</span>role &lt;-<span class="st"> &quot;Researcher&quot;</span></span></code></pre></div>
-<p>Note that R only permits certain codes such as <code>ctb</code> be be given in square brackets or as the <code>role</code> slot in a <code>person</code> object.</p>
-<p>We can instead always use the list approach to create any of these elements, instead of the shorthand coercion methods shown above. This permits a bit more flexibility, particularly for constructing elements where we want to include more metadata than R’s <code>person</code> object knows about. Here we define an <code>address</code> element first, since we can then re-use that element in defining both the contact person and publisher of the dataset:</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a>HF_address &lt;-<span class="st"> </span><span class="kw">list</span>(</span>
-<span id="cb12-2"><a href="#cb12-2"></a>                  <span class="dt">deliveryPoint =</span> <span class="st">&quot;324 North Main Street&quot;</span>,</span>
-<span id="cb12-3"><a href="#cb12-3"></a>                  <span class="dt">city =</span> <span class="st">&quot;Petersham&quot;</span>,</span>
-<span id="cb12-4"><a href="#cb12-4"></a>                  <span class="dt">administrativeArea =</span> <span class="st">&quot;MA&quot;</span>,</span>
-<span id="cb12-5"><a href="#cb12-5"></a>                  <span class="dt">postalCode =</span> <span class="st">&quot;01366&quot;</span>,</span>
-<span id="cb12-6"><a href="#cb12-6"></a>                  <span class="dt">country =</span> <span class="st">&quot;USA&quot;</span>)</span></code></pre></div>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a>publisher &lt;-<span class="st"> </span><span class="kw">list</span>(</span>
-<span id="cb13-2"><a href="#cb13-2"></a>                 <span class="dt">organizationName =</span> <span class="st">&quot;Harvard Forest&quot;</span>,</span>
-<span id="cb13-3"><a href="#cb13-3"></a>                 <span class="dt">address =</span> HF_address)</span></code></pre></div>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a>contact &lt;-<span class="st"> </span></span>
-<span id="cb14-2"><a href="#cb14-2"></a><span class="st">  </span><span class="kw">list</span>(</span>
-<span id="cb14-3"><a href="#cb14-3"></a>    <span class="dt">individualName =</span> aaron<span class="op">$</span>individualName,</span>
-<span id="cb14-4"><a href="#cb14-4"></a>    <span class="dt">electronicMailAddress =</span> aaron<span class="op">$</span>electronicMailAddress,</span>
-<span id="cb14-5"><a href="#cb14-5"></a>    <span class="dt">address =</span> HF_address,</span>
-<span id="cb14-6"><a href="#cb14-6"></a>    <span class="dt">organizationName =</span> <span class="st">&quot;Harvard Forest&quot;</span>,</span>
-<span id="cb14-7"><a href="#cb14-7"></a>    <span class="dt">phone =</span> <span class="st">&quot;000-000-0000&quot;</span>)</span></code></pre></div>
+<p>Individuals and organizations appear in many capacities in an EML
+document. Meanwhile, R already has a native object class,
+<code>person</code> for describing individuals, which it uses in
+citations and package descriptions, among other things. We can use
+native R function <code>person()</code> to create an R
+<code>person</code> object. Often it is more convenient to use R’s
+coercion function, <code>as.person()</code>, to turn a string with
+standardized notation into a <code>person</code> class (Though this is
+not always reliable, for instance, in surnames containing whitespace).
+However it is constructed, a <code>person</code> class can then be
+coerced into the appropriate EML object like so:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>R_person <span class="ot">&lt;-</span> <span class="fu">person</span>(<span class="st">&quot;Aaron&quot;</span>, <span class="st">&quot;Ellison&quot;</span>, ,<span class="st">&quot;fakeaddress@email.com&quot;</span>, <span class="st">&quot;cre&quot;</span>, </span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>                  <span class="fu">c</span>(<span class="at">ORCID =</span> <span class="st">&quot;0000-0003-4151-6081&quot;</span>))</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>aaron <span class="ot">&lt;-</span> <span class="fu">as_emld</span>(R_person)</span></code></pre></div>
+<p>Likewise this method can be applied to a list of <code>person</code>
+objects:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>others <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">as.person</span>(<span class="st">&quot;Benjamin Baiser&quot;</span>), <span class="fu">as.person</span>(<span class="st">&quot;Jennifer Sirota&quot;</span>))</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>associatedParty <span class="ot">&lt;-</span> <span class="fu">as_emld</span>(others)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>associatedParty[[<span class="dv">1</span>]]<span class="sc">$</span>role <span class="ot">&lt;-</span> <span class="st">&quot;Researcher&quot;</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>associatedParty[[<span class="dv">2</span>]]<span class="sc">$</span>role <span class="ot">&lt;-</span> <span class="st">&quot;Researcher&quot;</span></span></code></pre></div>
+<p>Note that R only permits certain codes such as <code>ctb</code> be be
+given in square brackets or as the <code>role</code> slot in a
+<code>person</code> object.</p>
+<p>We can instead always use the list approach to create any of these
+elements, instead of the shorthand coercion methods shown above. This
+permits a bit more flexibility, particularly for constructing elements
+where we want to include more metadata than R’s <code>person</code>
+object knows about. Here we define an <code>address</code> element
+first, since we can then re-use that element in defining both the
+contact person and publisher of the dataset:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>HF_address <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>                  <span class="at">deliveryPoint =</span> <span class="st">&quot;324 North Main Street&quot;</span>,</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>                  <span class="at">city =</span> <span class="st">&quot;Petersham&quot;</span>,</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>                  <span class="at">administrativeArea =</span> <span class="st">&quot;MA&quot;</span>,</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>                  <span class="at">postalCode =</span> <span class="st">&quot;01366&quot;</span>,</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>                  <span class="at">country =</span> <span class="st">&quot;USA&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>publisher <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>                 <span class="at">organizationName =</span> <span class="st">&quot;Harvard Forest&quot;</span>,</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>                 <span class="at">address =</span> HF_address)</span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>contact <span class="ot">&lt;-</span> </span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">individualName =</span> aaron<span class="sc">$</span>individualName,</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">electronicMailAddress =</span> aaron<span class="sc">$</span>electronicMailAddress,</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">address =</span> HF_address,</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">organizationName =</span> <span class="st">&quot;Harvard Forest&quot;</span>,</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">phone =</span> <span class="st">&quot;000-000-0000&quot;</span>)</span></code></pre></div>
 </div>
 <div id="creating-a-keywordset" class="section level2">
 <h2>Creating a <code>keywordSet</code></h2>
-<p>Constructing the <code>keywordSet</code> is just a list of lists. Note that everything is a list.</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a>keywordSet &lt;-<span class="st"> </span><span class="kw">list</span>(</span>
-<span id="cb15-2"><a href="#cb15-2"></a>    <span class="kw">list</span>(</span>
-<span id="cb15-3"><a href="#cb15-3"></a>        <span class="dt">keywordThesaurus =</span> <span class="st">&quot;LTER controlled vocabulary&quot;</span>,</span>
-<span id="cb15-4"><a href="#cb15-4"></a>        <span class="dt">keyword =</span> <span class="kw">list</span>(<span class="st">&quot;bacteria&quot;</span>,</span>
-<span id="cb15-5"><a href="#cb15-5"></a>                    <span class="st">&quot;carnivorous plants&quot;</span>,</span>
-<span id="cb15-6"><a href="#cb15-6"></a>                    <span class="st">&quot;genetics&quot;</span>,</span>
-<span id="cb15-7"><a href="#cb15-7"></a>                    <span class="st">&quot;thresholds&quot;</span>)</span>
-<span id="cb15-8"><a href="#cb15-8"></a>        ),</span>
-<span id="cb15-9"><a href="#cb15-9"></a>    <span class="kw">list</span>(</span>
-<span id="cb15-10"><a href="#cb15-10"></a>        <span class="dt">keywordThesaurus =</span> <span class="st">&quot;LTER core area&quot;</span>,</span>
-<span id="cb15-11"><a href="#cb15-11"></a>        <span class="dt">keyword =</span>  <span class="kw">list</span>(<span class="st">&quot;populations&quot;</span>, <span class="st">&quot;inorganic nutrients&quot;</span>, <span class="st">&quot;disturbance&quot;</span>)</span>
-<span id="cb15-12"><a href="#cb15-12"></a>        ),</span>
-<span id="cb15-13"><a href="#cb15-13"></a>    <span class="kw">list</span>(</span>
-<span id="cb15-14"><a href="#cb15-14"></a>        <span class="dt">keywordThesaurus =</span> <span class="st">&quot;HFR default&quot;</span>,</span>
-<span id="cb15-15"><a href="#cb15-15"></a>        <span class="dt">keyword =</span> <span class="kw">list</span>(<span class="st">&quot;Harvard Forest&quot;</span>, <span class="st">&quot;HFR&quot;</span>, <span class="st">&quot;LTER&quot;</span>, <span class="st">&quot;USA&quot;</span>)</span>
-<span id="cb15-16"><a href="#cb15-16"></a>        ))</span></code></pre></div>
-<p>Lastly, some of the elements needed for <code>eml</code> object can simply be given as text strings.</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a>pubDate &lt;-<span class="st"> &quot;2012&quot;</span> </span>
-<span id="cb16-2"><a href="#cb16-2"></a></span>
-<span id="cb16-3"><a href="#cb16-3"></a>title &lt;-<span class="st"> &quot;Thresholds and Tipping Points in a Sarracenia </span></span>
-<span id="cb16-4"><a href="#cb16-4"></a><span class="st">Microecosystem at Harvard Forest since 2012&quot;</span></span>
-<span id="cb16-5"><a href="#cb16-5"></a></span>
-<span id="cb16-6"><a href="#cb16-6"></a>abstract &lt;-<span class="st"> &quot;The primary goal of this project is to determine</span></span>
-<span id="cb16-7"><a href="#cb16-7"></a><span class="st">  experimentally the amount of lead time required to prevent a state</span></span>
-<span id="cb16-8"><a href="#cb16-8"></a><span class="st">change. To achieve this goal, we will (1) experimentally induce state</span></span>
-<span id="cb16-9"><a href="#cb16-9"></a><span class="st">changes in a natural aquatic ecosystem - the Sarracenia microecosystem;</span></span>
-<span id="cb16-10"><a href="#cb16-10"></a><span class="st">(2) use proteomic analysis to identify potential indicators of states</span></span>
-<span id="cb16-11"><a href="#cb16-11"></a><span class="st">and state changes; and (3) test whether we can forestall state changes</span></span>
-<span id="cb16-12"><a href="#cb16-12"></a><span class="st">by experimentally intervening in the system. This work uses state-of-the</span></span>
-<span id="cb16-13"><a href="#cb16-13"></a><span class="st">art molecular tools to identify early warning indicators in the field</span></span>
-<span id="cb16-14"><a href="#cb16-14"></a><span class="st">of aerobic to anaerobic state changes driven by nutrient enrichment</span></span>
-<span id="cb16-15"><a href="#cb16-15"></a><span class="st">in an aquatic ecosystem. The study tests two general hypotheses: (1)</span></span>
-<span id="cb16-16"><a href="#cb16-16"></a><span class="st">proteomic biomarkers can function as reliable indicators of impending</span></span>
-<span id="cb16-17"><a href="#cb16-17"></a><span class="st">state changes and may give early warning before increasing variances</span></span>
-<span id="cb16-18"><a href="#cb16-18"></a><span class="st">and statistical flickering of monitored variables; and (2) well-timed</span></span>
-<span id="cb16-19"><a href="#cb16-19"></a><span class="st">intervention based on proteomic biomarkers can avert future state changes</span></span>
-<span id="cb16-20"><a href="#cb16-20"></a><span class="st">in ecological systems.&quot;</span>  </span>
-<span id="cb16-21"><a href="#cb16-21"></a></span>
-<span id="cb16-22"><a href="#cb16-22"></a>intellectualRights &lt;-<span class="st"> &quot;This dataset is released to the public and may be freely</span></span>
-<span id="cb16-23"><a href="#cb16-23"></a><span class="st">  downloaded. Please keep the designated Contact person informed of any</span></span>
-<span id="cb16-24"><a href="#cb16-24"></a><span class="st">plans to use the dataset. Consultation or collaboration with the original</span></span>
-<span id="cb16-25"><a href="#cb16-25"></a><span class="st">investigators is strongly encouraged. Publications and data products</span></span>
-<span id="cb16-26"><a href="#cb16-26"></a><span class="st">that make use of the dataset must include proper acknowledgement. For</span></span>
-<span id="cb16-27"><a href="#cb16-27"></a><span class="st">more information on LTER Network data access and use policies, please</span></span>
-<span id="cb16-28"><a href="#cb16-28"></a><span class="st">see: http://www.lternet.edu/data/netpolicy.html.&quot;</span></span></code></pre></div>
-<p>Many of these text fields can instead be read in from an external file that has richer formatting, such as we did with the <code>set_methods()</code> step. Any text field containing a slot named <code>section</code> can import text data from a MS Word <code>.docx</code> file, markdown file, or other file format recognized by <a href="https://pandoc.org">Pandoc</a> into that element. For instance, here we import the same paragraph of text shown above for <code>abstract</code> from an external file (this time, a markdown-formatted file) instead:</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a>abstract_file &lt;-<span class="st">  </span><span class="kw">system.file</span>(<span class="st">&quot;examples/hf205-abstract.md&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;EML&quot;</span>)</span>
-<span id="cb17-2"><a href="#cb17-2"></a>abstract &lt;-<span class="st"> </span><span class="kw">set_TextType</span>(abstract_file)</span></code></pre></div>
-<p>We are now ready to add each of these elements we have created so far into our <code>dataset</code> element, like so:</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a>dataset &lt;-<span class="st"> </span><span class="kw">list</span>(</span>
-<span id="cb18-2"><a href="#cb18-2"></a>               <span class="dt">title =</span> title,</span>
-<span id="cb18-3"><a href="#cb18-3"></a>               <span class="dt">creator =</span> aaron,</span>
-<span id="cb18-4"><a href="#cb18-4"></a>               <span class="dt">pubDate =</span> pubDate,</span>
-<span id="cb18-5"><a href="#cb18-5"></a>               <span class="dt">intellectualRights =</span> intellectualRights,</span>
-<span id="cb18-6"><a href="#cb18-6"></a>               <span class="dt">abstract =</span> abstract,</span>
-<span id="cb18-7"><a href="#cb18-7"></a>               <span class="dt">associatedParty =</span> associatedParty,</span>
-<span id="cb18-8"><a href="#cb18-8"></a>               <span class="dt">keywordSet =</span> keywordSet,</span>
-<span id="cb18-9"><a href="#cb18-9"></a>               <span class="dt">coverage =</span> coverage,</span>
-<span id="cb18-10"><a href="#cb18-10"></a>               <span class="dt">contact =</span> contact,</span>
-<span id="cb18-11"><a href="#cb18-11"></a>               <span class="dt">methods =</span> methods,</span>
-<span id="cb18-12"><a href="#cb18-12"></a>               <span class="dt">dataTable =</span> dataTable)</span></code></pre></div>
-<p>With the <code>dataset</code> in place, we are ready to declare our root <code>eml</code> element. In addition to our <code>dataset</code> element we have already built, all we need is a packageId code and the system on which it is based. Here we have generated a unique id using the standard <code>uuid</code> algorithm, which is available in the R package <code>uuid</code>.</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a>eml &lt;-<span class="st"> </span><span class="kw">list</span>(</span>
-<span id="cb19-2"><a href="#cb19-2"></a>           <span class="dt">packageId =</span> uuid<span class="op">::</span><span class="kw">UUIDgenerate</span>(),</span>
-<span id="cb19-3"><a href="#cb19-3"></a>           <span class="dt">system =</span> <span class="st">&quot;uuid&quot;</span>, <span class="co"># type of identifier</span></span>
-<span id="cb19-4"><a href="#cb19-4"></a>           <span class="dt">dataset =</span> dataset)</span></code></pre></div>
-<p>With our <code>eml</code> object fully constructed in R, we can now check that it is valid, conforming to all criteria set forth in the EML Schema. This will ensure that other researchers and other software can readily parse and understand the contents of our metadata file:</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a><span class="kw">write_eml</span>(eml, <span class="st">&quot;eml.xml&quot;</span>)</span></code></pre></div>
-<pre><code>## NULL</code></pre>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1"></a><span class="kw">eml_validate</span>(<span class="st">&quot;eml.xml&quot;</span>)</span></code></pre></div>
+<p>Constructing the <code>keywordSet</code> is just a list of lists.
+Note that everything is a list.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>keywordSet <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>        <span class="at">keywordThesaurus =</span> <span class="st">&quot;LTER controlled vocabulary&quot;</span>,</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>        <span class="at">keyword =</span> <span class="fu">list</span>(<span class="st">&quot;bacteria&quot;</span>,</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>                    <span class="st">&quot;carnivorous plants&quot;</span>,</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>                    <span class="st">&quot;genetics&quot;</span>,</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>                    <span class="st">&quot;thresholds&quot;</span>)</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>        ),</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>        <span class="at">keywordThesaurus =</span> <span class="st">&quot;LTER core area&quot;</span>,</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>        <span class="at">keyword =</span>  <span class="fu">list</span>(<span class="st">&quot;populations&quot;</span>, <span class="st">&quot;inorganic nutrients&quot;</span>, <span class="st">&quot;disturbance&quot;</span>)</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>        ),</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>        <span class="at">keywordThesaurus =</span> <span class="st">&quot;HFR default&quot;</span>,</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>        <span class="at">keyword =</span> <span class="fu">list</span>(<span class="st">&quot;Harvard Forest&quot;</span>, <span class="st">&quot;HFR&quot;</span>, <span class="st">&quot;LTER&quot;</span>, <span class="st">&quot;USA&quot;</span>)</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>        ))</span></code></pre></div>
+<p>Lastly, some of the elements needed for <code>eml</code> object can
+simply be given as text strings.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>pubDate <span class="ot">&lt;-</span> <span class="st">&quot;2012&quot;</span> </span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>title <span class="ot">&lt;-</span> <span class="st">&quot;Thresholds and Tipping Points in a Sarracenia </span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="st">Microecosystem at Harvard Forest since 2012&quot;</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>abstract <span class="ot">&lt;-</span> <span class="st">&quot;The primary goal of this project is to determine</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="st">  experimentally the amount of lead time required to prevent a state</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="st">change. To achieve this goal, we will (1) experimentally induce state</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a><span class="st">changes in a natural aquatic ecosystem - the Sarracenia microecosystem;</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a><span class="st">(2) use proteomic analysis to identify potential indicators of states</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a><span class="st">and state changes; and (3) test whether we can forestall state changes</span></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a><span class="st">by experimentally intervening in the system. This work uses state-of-the</span></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a><span class="st">art molecular tools to identify early warning indicators in the field</span></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a><span class="st">of aerobic to anaerobic state changes driven by nutrient enrichment</span></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a><span class="st">in an aquatic ecosystem. The study tests two general hypotheses: (1)</span></span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a><span class="st">proteomic biomarkers can function as reliable indicators of impending</span></span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a><span class="st">state changes and may give early warning before increasing variances</span></span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a><span class="st">and statistical flickering of monitored variables; and (2) well-timed</span></span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a><span class="st">intervention based on proteomic biomarkers can avert future state changes</span></span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a><span class="st">in ecological systems.&quot;</span>  </span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>intellectualRights <span class="ot">&lt;-</span> <span class="st">&quot;This dataset is released to the public and may be freely</span></span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a><span class="st">  downloaded. Please keep the designated Contact person informed of any</span></span>
+<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a><span class="st">plans to use the dataset. Consultation or collaboration with the original</span></span>
+<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a><span class="st">investigators is strongly encouraged. Publications and data products</span></span>
+<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a><span class="st">that make use of the dataset must include proper acknowledgement. For</span></span>
+<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a><span class="st">more information on LTER Network data access and use policies, please</span></span>
+<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a><span class="st">see: http://www.lternet.edu/data/netpolicy.html.&quot;</span></span></code></pre></div>
+<p>Many of these text fields can instead be read in from an external
+file that has richer formatting, such as we did with the
+<code>set_methods()</code> step. Any text field containing a slot named
+<code>section</code> can import text data from a MS Word
+<code>.docx</code> file, markdown file, or other file format recognized
+by <a href="https://pandoc.org">Pandoc</a> into that element. For
+instance, here we import the same paragraph of text shown above for
+<code>abstract</code> from an external file (this time, a
+markdown-formatted file) instead:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>abstract_file <span class="ot">&lt;-</span>  <span class="fu">system.file</span>(<span class="st">&quot;examples/hf205-abstract.md&quot;</span>, <span class="at">package =</span> <span class="st">&quot;EML&quot;</span>)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>abstract <span class="ot">&lt;-</span> <span class="fu">set_TextType</span>(abstract_file)</span></code></pre></div>
+<p>We are now ready to add each of these elements we have created so far
+into our <code>dataset</code> element, like so:</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>dataset <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>               <span class="at">title =</span> title,</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>               <span class="at">creator =</span> aaron,</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">pubDate =</span> pubDate,</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>               <span class="at">intellectualRights =</span> intellectualRights,</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>               <span class="at">abstract =</span> abstract,</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>               <span class="at">associatedParty =</span> associatedParty,</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>               <span class="at">keywordSet =</span> keywordSet,</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>               <span class="at">coverage =</span> coverage,</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>               <span class="at">contact =</span> contact,</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>               <span class="at">methods =</span> methods,</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>               <span class="at">dataTable =</span> dataTable)</span></code></pre></div>
+<p>With the <code>dataset</code> in place, we are ready to declare our
+root <code>eml</code> element. In addition to our <code>dataset</code>
+element we have already built, all we need is a packageId code and the
+system on which it is based. Here we have generated a unique id using
+the standard <code>uuid</code> algorithm, which is available in the R
+package <code>uuid</code>.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>eml <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>           <span class="at">packageId =</span> uuid<span class="sc">::</span><span class="fu">UUIDgenerate</span>(),</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>           <span class="at">system =</span> <span class="st">&quot;uuid&quot;</span>, <span class="co"># type of identifier</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>           <span class="at">dataset =</span> dataset)</span></code></pre></div>
+<p>With our <code>eml</code> object fully constructed in R, we can now
+check that it is valid, conforming to all criteria set forth in the EML
+Schema. This will ensure that other researchers and other software can
+readily parse and understand the contents of our metadata file:</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write_eml</span>(eml, <span class="st">&quot;eml.xml&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">eml_validate</span>(<span class="st">&quot;eml.xml&quot;</span>)</span></code></pre></div>
 <pre><code>## [1] TRUE
 ## attr(,&quot;errors&quot;)
 ## character(0)</code></pre>
-<p>The validator returns a status <code>0</code> to indicate success. Otherwise, the first error message encountered will be displayed. The most common reason for an error is probably the omission of a required metadata field.</p>
-<p>To take the greatest advantage of EML, we should consider depositing our file in a <a href="https://knb.ecoinformatics.org/knb/docs/intro.html">Metacat</a>-enabled repository, which we discuss in the next vignette on using EML with data repositories.</p>
+<p>The validator returns a status <code>0</code> to indicate success.
+Otherwise, the first error message encountered will be displayed. The
+most common reason for an error is probably the omission of a required
+metadata field.</p>
+<p>To take the greatest advantage of EML, we should consider depositing
+our file in a <a href="https://knb.ecoinformatics.org/knb/docs/intro.html">Metacat</a>-enabled
+repository, which we discuss in the next vignette on using EML with data
+repositories.</p>
 </div>
 
 

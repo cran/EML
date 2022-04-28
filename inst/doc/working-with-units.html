@@ -12,23 +12,20 @@
 
 <meta name="author" content="Carl Boettiger" />
 
-<meta name="date" content="2021-02-26" />
+<meta name="date" content="2022-04-28" />
 
 <title>Working with Units</title>
 
-<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
-// v0.0.1
-// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
-
-document.addEventListener('DOMContentLoaded', function() {
-  const codeList = document.getElementsByClassName("sourceCode");
-  for (var i = 0; i < codeList.length; i++) {
-    var linkList = codeList[i].getElementsByTagName('a');
-    for (var j = 0; j < linkList.length; j++) {
-      if (linkList[j].innerHTML === "") {
-        linkList[j].setAttribute('aria-hidden', 'true');
-      }
-    }
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
   }
 });
 </script>
@@ -43,6 +40,7 @@ document.addEventListener('DOMContentLoaded', function() {
     </style>
 
 
+
 <style type="text/css">
   code {
     white-space: pre;
@@ -52,19 +50,19 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 </style>
 <style type="text/css" data-origin="pandoc">
-code.sourceCode > span { display: inline-block; line-height: 1.25; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-code.sourceCode > span:empty { height: 1.2em; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
 @media screen {
 div.sourceCode { overflow: auto; }
 }
 @media print {
-code.sourceCode { white-space: pre-wrap; }
-code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -84,7 +82,7 @@ pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-le
 div.sourceCode
   {   }
 @media screen {
-code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; font-weight: bold; } /* Alert */
 code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
@@ -336,51 +334,68 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">Working with Units</h1>
 <h4 class="author">Carl Boettiger</h4>
-<h4 class="date">2021-02-26</h4>
+<h4 class="date">2022-04-28</h4>
 
 
 
 <div id="overview" class="section level2">
 <h2>Overview</h2>
-<p>One essential role of EML metadata is in precisely defining the units in which data is measured. To make sure these units can be understood by (and thus potentially converted to other units by) a computer, it’s necessary to be rather precise about our choice of units. EML knows about a lot of commonly used units, referred to as “standardUnits,” already. If a unit is in EML’s <code>standardUnit</code> dictionary, we can refer to it without further explanation as long as we’re careful to use the precise <code>id</code> for that unit, as we will see below.</p>
-<p>Sometimes data involves a unit that is not in <code>standardUnit</code> dictionary. In this case, the metadata must provide additional information about the unit, including how to convert the unit into the SI system. EML uses an existing standard, <a href="http://www.ch.ic.ac.uk/rzepa/codata2/">stmml</a>, to represent this information, which must be given in the <code>additionalMetadata</code> section of an EML file. The <code>stmml</code> standard is also used to specify EML’s own <code>standardUnit</code> definitions.</p>
+<p>One essential role of EML metadata is in precisely defining the units
+in which data is measured. To make sure these units can be understood by
+(and thus potentially converted to other units by) a computer, it’s
+necessary to be rather precise about our choice of units. EML knows
+about a lot of commonly used units, referred to as “standardUnits,”
+already. If a unit is in EML’s <code>standardUnit</code> dictionary, we
+can refer to it without further explanation as long as we’re careful to
+use the precise <code>id</code> for that unit, as we will see below.</p>
+<p>Sometimes data involves a unit that is not in
+<code>standardUnit</code> dictionary. In this case, the metadata must
+provide additional information about the unit, including how to convert
+the unit into the SI system. EML uses an existing standard, <a href="http://www.ch.ic.ac.uk/rzepa/codata2/">stmml</a>, to represent
+this information, which must be given in the
+<code>additionalMetadata</code> section of an EML file. The
+<code>stmml</code> standard is also used to specify EML’s own
+<code>standardUnit</code> definitions.</p>
 </div>
 <div id="add-a-custom-unit-to-eml" class="section level2">
 <h2>Add a custom unit to EML</h2>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">library</span>(<span class="st">&quot;EML&quot;</span>)</span></code></pre></div>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>custom_units &lt;-<span class="st"> </span></span>
-<span id="cb2-2"><a href="#cb2-2"></a><span class="st">  </span><span class="kw">data.frame</span>(<span class="dt">id =</span> <span class="st">&quot;speciesPerSquareMeter&quot;</span>, </span>
-<span id="cb2-3"><a href="#cb2-3"></a>             <span class="dt">unitType =</span> <span class="st">&quot;arealDensity&quot;</span>, </span>
-<span id="cb2-4"><a href="#cb2-4"></a>             <span class="dt">parentSI =</span> <span class="st">&quot;numberPerSquareMeter&quot;</span>, </span>
-<span id="cb2-5"><a href="#cb2-5"></a>             <span class="dt">multiplierToSI =</span> <span class="dv">1</span>, </span>
-<span id="cb2-6"><a href="#cb2-6"></a>             <span class="dt">description =</span> <span class="st">&quot;number of species per square meter&quot;</span>)</span>
-<span id="cb2-7"><a href="#cb2-7"></a></span>
-<span id="cb2-8"><a href="#cb2-8"></a></span>
-<span id="cb2-9"><a href="#cb2-9"></a>unitList &lt;-<span class="st"> </span><span class="kw">set_unitList</span>(custom_units)</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">&quot;EML&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>custom_units <span class="ot">&lt;-</span> </span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">data.frame</span>(<span class="at">id =</span> <span class="st">&quot;speciesPerSquareMeter&quot;</span>, </span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">unitType =</span> <span class="st">&quot;arealDensity&quot;</span>, </span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">parentSI =</span> <span class="st">&quot;numberPerSquareMeter&quot;</span>, </span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>             <span class="at">multiplierToSI =</span> <span class="dv">1</span>, </span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>             <span class="at">description =</span> <span class="st">&quot;number of species per square meter&quot;</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>unitList <span class="ot">&lt;-</span> <span class="fu">set_unitList</span>(custom_units)</span></code></pre></div>
 <p>Start with a minimal EML document</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>me &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">individualName =</span> <span class="kw">list</span>(<span class="dt">givenName =</span> <span class="st">&quot;Carl&quot;</span>, <span class="dt">surName =</span> <span class="st">&quot;Boettiger&quot;</span>))</span>
-<span id="cb3-2"><a href="#cb3-2"></a>my_eml &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">dataset =</span> <span class="kw">list</span>(</span>
-<span id="cb3-3"><a href="#cb3-3"></a>              <span class="dt">title =</span> <span class="st">&quot;A Minimal Valid EML Dataset&quot;</span>,</span>
-<span id="cb3-4"><a href="#cb3-4"></a>              <span class="dt">creator =</span> me,</span>
-<span id="cb3-5"><a href="#cb3-5"></a>              <span class="dt">contact =</span> me),</span>
-<span id="cb3-6"><a href="#cb3-6"></a>              <span class="dt">additionalMetadata =</span> <span class="kw">list</span>(<span class="dt">metadata =</span> <span class="kw">list</span>(</span>
-<span id="cb3-7"><a href="#cb3-7"></a>                <span class="dt">unitList =</span> unitList</span>
-<span id="cb3-8"><a href="#cb3-8"></a>              ))</span>
-<span id="cb3-9"><a href="#cb3-9"></a>            )</span></code></pre></div>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">write_eml</span>(my_eml, <span class="st">&quot;eml-with-units.xml&quot;</span>)</span></code></pre></div>
-<pre><code>## NULL</code></pre>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a><span class="kw">eml_validate</span>(<span class="st">&quot;eml-with-units.xml&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>me <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">individualName =</span> <span class="fu">list</span>(<span class="at">givenName =</span> <span class="st">&quot;Carl&quot;</span>, <span class="at">surName =</span> <span class="st">&quot;Boettiger&quot;</span>))</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>my_eml <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">dataset =</span> <span class="fu">list</span>(</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>              <span class="at">title =</span> <span class="st">&quot;A Minimal Valid EML Dataset&quot;</span>,</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>              <span class="at">creator =</span> me,</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>              <span class="at">contact =</span> me),</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>              <span class="at">additionalMetadata =</span> <span class="fu">list</span>(<span class="at">metadata =</span> <span class="fu">list</span>(</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>                <span class="at">unitList =</span> unitList</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>              ))</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>            )</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write_eml</span>(my_eml, <span class="st">&quot;eml-with-units.xml&quot;</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">eml_validate</span>(<span class="st">&quot;eml-with-units.xml&quot;</span>)</span></code></pre></div>
 <pre><code>## [1] TRUE
 ## attr(,&quot;errors&quot;)
 ## character(0)</code></pre>
-<p>Note: Custom units are widely misunderstood and misused in EML. See examples from <a href="https://gist.github.com/amoeba/67a23818dfca49904c7a54b0632d76bc#file-all-arcticdata-customUnits">custom-units</a></p>
+<p>Note: Custom units are widely misunderstood and misused in EML. See
+examples from <a href="https://gist.github.com/amoeba/67a23818dfca49904c7a54b0632d76bc#file-all-arcticdata-customUnits">custom-units</a></p>
 </div>
 <div id="reading-eml-parsing-unit-information-including-custom-unit-types" class="section level2">
-<h2>Reading EML: parsing unit information, including custom unit types</h2>
-<p>Let us start by examining the numeric attributes in an example EML file. First we read in the file:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>f &lt;-<span class="st"> </span><span class="kw">system.file</span>(<span class="st">&quot;tests&quot;</span>, emld<span class="op">::</span><span class="kw">eml_version</span>(), <span class="st">&quot;eml-datasetWithUnits.xml&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;emld&quot;</span>)</span>
-<span id="cb8-2"><a href="#cb8-2"></a>eml &lt;-<span class="st"> </span><span class="kw">read_eml</span>(f)</span></code></pre></div>
-<p>We extract the <code>attributeList</code>, and examine the numeric attributes (e.g. those which have units):</p>
+<h2>Reading EML: parsing unit information, including custom unit
+types</h2>
+<p>Let us start by examining the numeric attributes in an example EML
+file. First we read in the file:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>f <span class="ot">&lt;-</span> <span class="fu">system.file</span>(<span class="st">&quot;tests&quot;</span>, emld<span class="sc">::</span><span class="fu">eml_version</span>(), <span class="st">&quot;eml-datasetWithUnits.xml&quot;</span>, <span class="at">package =</span> <span class="st">&quot;emld&quot;</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>eml <span class="ot">&lt;-</span> <span class="fu">read_eml</span>(f)</span></code></pre></div>
+<p>We extract the <code>attributeList</code>, and examine the numeric
+attributes (e.g. those which have units):</p>
 </div>
 
 
