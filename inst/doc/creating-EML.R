@@ -95,8 +95,8 @@ methods_file <- system.file("examples/hf205-methods.docx", package = "EML")
 methods <- set_methods(methods_file)
 
 ## ----include=FALSE, eval=!has_pandoc------------------------------------------
-#  ## placeholder if pandoc is not installed
-#  methods <- NULL
+# ## placeholder if pandoc is not installed
+# methods <- NULL
 
 ## -----------------------------------------------------------------------------
 R_person <- person("Aaron", "Ellison", ,"fakeaddress@email.com", "cre", 
@@ -178,7 +178,7 @@ plans to use the dataset. Consultation or collaboration with the original
 investigators is strongly encouraged. Publications and data products
 that make use of the dataset must include proper acknowledgement. For
 more information on LTER Network data access and use policies, please
-see: http://www.lternet.edu/data/netpolicy.html."
+see: 'lternet.edu/data/netpolicy.html'."
 
 ## ----eval=has_pandoc----------------------------------------------------------
 abstract_file <-  system.file("examples/hf205-abstract.md", package = "EML")

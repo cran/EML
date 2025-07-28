@@ -5,7 +5,7 @@ Description: Work with Ecological Metadata Language ('EML') files.
     'EML' is a widely used metadata standard in the ecological and
     environmental sciences, described in Jones et al. (2006),
     <doi:10.1146/annurev.ecolsys.37.091305.110031>.
-Version: 2.0.6.1
+Version: 2.0.7
 Authors@R: c(
               person("Carl", "Boettiger", 
                   email = "cboettig@gmail.com", 
@@ -37,17 +37,17 @@ Suggests: knitr, taxadb, tibble, testthat, covr, EML, units,
 Imports: xml2, methods, digest, emld (>= 0.5.0), jqr, jsonlite, uuid,
         rmarkdown, utils, dplyr
 VignetteBuilder: knitr
-RoxygenNote: 7.1.1
+RoxygenNote: 7.3.2
 Language: en-US
 NeedsCompilation: no
-Packaged: 2022-04-28 17:05:30 UTC; cboettig
-Author: Carl Boettiger [aut, cre, cph]
-    (<https://orcid.org/0000-0002-1642-628X>),
-  Matthew B. Jones [aut] (<https://orcid.org/0000-0003-0077-4738>),
-  Mitchell Maier [ctb] (<https://orcid.org/0000-0001-6955-0535>),
-  Bryce Mecum [ctb] (<https://orcid.org/0000-0002-0381-3766>),
-  Maëlle Salmon [ctb] (<https://orcid.org/0000-0002-2815-0399>),
-  Jeanette Clark [ctb] (<https://orcid.org/0000-0003-4703-1974>)
+Packaged: 2025-07-28 14:36:03 UTC; cboettig
+Author: Carl Boettiger [aut, cre, cph] (ORCID:
+    <https://orcid.org/0000-0002-1642-628X>),
+  Matthew B. Jones [aut] (ORCID: <https://orcid.org/0000-0003-0077-4738>),
+  Mitchell Maier [ctb] (ORCID: <https://orcid.org/0000-0001-6955-0535>),
+  Bryce Mecum [ctb] (ORCID: <https://orcid.org/0000-0002-0381-3766>),
+  Maëlle Salmon [ctb] (ORCID: <https://orcid.org/0000-0002-2815-0399>),
+  Jeanette Clark [ctb] (ORCID: <https://orcid.org/0000-0003-4703-1974>)
 Maintainer: Carl Boettiger <cboettig@gmail.com>
 Repository: CRAN
-Date/Publication: 2022-04-28 17:40:02 UTC
+Date/Publication: 2025-07-28 15:40:07 UTC
